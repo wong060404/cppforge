@@ -80,6 +80,33 @@ function readBody(req, limit = 2 * 1024 * 1024) {
   });
 }
 
+/** 讀 JSON body；壞掉的 JSON 或超過上限一律回 4xx（而不是讓它變成 500） */
+async function readJsonBody(req, res) {
+  let raw;
+  try {
+    raw = await readBody(req);
+  } catch (err) {
+    const tooBig = /payload too large/i.test(String(err?.message ?? ""));
+    sendJson(res, tooBig ? 413 : 400, {
+      error: tooBig ? "PAYLOAD_TOO_LARGE" : "BAD_BODY",
+      message: tooBig ? "request body 過大（上限 2 MB）" : "無法讀取 request body",
+    });
+    return null;
+  }
+  if (!raw.trim()) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      sendJson(res, 400, { error: "BAD_JSON", message: "body 必須是 JSON object" });
+      return null;
+    }
+    return parsed;
+  } catch {
+    sendJson(res, 400, { error: "BAD_JSON", message: "body 不是合法 JSON" });
+    return null;
+  }
+}
+
 const decode = (s) => decodeURIComponent(s);
 
 async function handleApi(req, res, url) {
@@ -130,12 +157,17 @@ async function handleApi(req, res, url) {
       return sendJson(res, 200, reviewQueue(limit));
     }
     if (req.method === "POST" && parts[2]) {
-      const body = JSON.parse((await readBody(req)) || "{}");
+      const body = await readJsonBody(req, res);
+      if (body === null) return; // 已回 400
       const grade = Number(body.grade);
       if (![1, 2, 3, 4].includes(grade)) {
         return sendJson(res, 400, { error: "BAD_GRADE", message: "grade 必須是 1..4" });
       }
-      const result = gradeCard(Number(decode(parts[2])), grade);
+      const cardId = Number(decode(parts[2]));
+      if (!Number.isInteger(cardId)) {
+        return sendJson(res, 400, { error: "BAD_CARD_ID", message: "card id 必須是整數" });
+      }
+      const result = gradeCard(cardId, grade);
       if (!result) return sendJson(res, 404, { error: "CARD_NOT_FOUND" });
       return sendJson(res, 200, result);
     }
@@ -174,9 +206,13 @@ async function handleApi(req, res, url) {
     }
 
     if (req.method === "POST" && parts[3] === "run") {
-      const body = JSON.parse((await readBody(req)) || "{}");
-      const code = String(body.code ?? "");
-      if (code.length > 512 * 1024) return sendJson(res, 413, { error: "程式碼過長" });
+      const body = await readJsonBody(req, res);
+      if (body === null) return; // 已回 400
+      if (typeof body.code !== "string") {
+        return sendJson(res, 400, { error: "BAD_CODE", message: "code 必須是字串" });
+      }
+      const code = body.code;
+      if (code.length > 512 * 1024) return sendJson(res, 413, { error: "CODE_TOO_LONG", message: "程式碼過長（上限 512 KB）" });
 
       const nodes = await scanNodes();
       const node = nodes.find((n) => n.id === id);

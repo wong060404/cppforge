@@ -4,7 +4,7 @@
 
 > 狀態：**40 節課（L0–L6），前 4 節是基礎語法、含 CS2310 的核心概念**、錯誤圖鑑 22 條、間隔複習 93 張卡 + 統計頁；整條解鎖鏈以參考解驗證 40/40。
 > **驗收清單：[`docs/19-acceptance.md`](docs/19-acceptance.md)** · **CS2310 概念對照：[`docs/23-cs2310-coverage.md`](docs/23-cs2310-coverage.md)** · **發佈到 GitHub：[`docs/24-publishing.md`](docs/24-publishing.md)**
-> 進度與路線：**[框架完成進度](docs/12-progress.md)**
+> 進度與路線：**[框架完成進度](docs/12-progress.md)** · **完整功能審計（含修了什麼）：[`docs/25-audit.md`](docs/25-audit.md)**
 > 文件：**[框架](docs/00-framework.md)** · **[POC](docs/01-poc-report.md)** · **[M0](docs/02-m0.md)** · **[圖鑑](docs/03-m1.md)** · **[複習](docs/04-m1b.md)** · **[內容](docs/05-m1c.md)** · **[L2 開場](docs/06-m2.md)** · **[複製語意](docs/07-m2b.md)** · **[運算子](docs/08-m2c.md)** · **[測試框架](docs/09-harness.md)** · **[多型](docs/10-m2d.md)** · **[std::map](docs/11-l3a.md)**
 
 ---
@@ -193,6 +193,13 @@ node app/test/atlas.test.mjs
 
 # UI 冒煙測試（需要服務已啟動；--run 會真的送出評測並走完複習流程）
 node app/test/dom-smoke.mjs --run
+
+# API 與靜態資源審計（需要服務已啟動；含壞輸入、路徑穿越、並發一致性）
+node app/test/audit-api.mjs
+
+# 前端完整性審計（選用；需要 jsdom，會用真實 DOM 逐一開啟全部節點）
+npm install jsdom
+node app/test/audit-dom.mjs --jsdom ./node_modules/jsdom
 
 # 環境能力探測
 node poc/tools/probe.mjs

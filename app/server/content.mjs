@@ -97,6 +97,28 @@ export async function courseTree(progress) {
   return levels;
 }
 
+/**
+ * 沒有手寫 steps 時，依「這一節會跑哪些 grader」自動產生一份可執行的流程。
+ *
+ * 為什麼放在伺服器而不是前端：API 是契約。若「怎麼做」只在客戶端生成，
+ * 第二個客戶端（或直接用 API 的人）就拿不到指引 —— 這是審計時發現的缺口。
+ */
+export function defaultSteps(node) {
+  const g = node.graderSummary?.graders ?? node.graders ?? ["compile", "unit_test"];
+  const steps = [];
+  if ((node.interfaceFiles ?? []).length) {
+    steps.push("先讀下面的 interface 檔：型別、參數、回傳值就是規格，不能改。");
+  }
+  if (g.includes("compile")) steps.push("改右側程式碼，先讓「編譯」這一列變成 PASS（訊息的行號就是位置）。");
+  if (g.includes("unit_test")) steps.push("看評測裡失敗的 test 名稱 —— 那就是規格，一次修一個。");
+  if (g.includes("io_match")) steps.push("用題目給的測資自己比對輸出：空白、換行、大小寫都算。");
+  if (g.includes("runtime_safety")) steps.push("test 全過之後再看「memory safety」：洩漏或越界會單獨讓它 FAIL。");
+  if (g.includes("static_rules")) steps.push("注意「static 規則」：有些寫法被禁止，也有些是**必須**使用的。");
+  if (g.includes("analyzer")) steps.push("看「static analysis」指出的行號 —— 那是分析器認為可疑的地方。");
+  if (!steps.length) steps.push("修改右側程式碼，讓評測全部通過。");
+  return steps;
+}
+
 /** 單一節點的完整內容（給 UI） */
 export async function loadNode(id, progress) {
   const nodes = await scanNodes();
@@ -137,8 +159,9 @@ export async function loadNode(id, progress) {
     starter,
     interfaceFiles,
     drills: node.drills ?? [],
-    // 任務卡用：怎麼做（步驟）與提示。少了這兩個，「本節任務」就只剩介面檔
-    steps: node.steps ?? [],
+    // 任務卡用：怎麼做（步驟）與提示。
+    // steps 沒手寫時由伺服器依 grader 產生 —— API 一定給得出完整指引。
+    steps: (node.steps ?? []).length ? node.steps : defaultSteps(node),
     hints: node.hints ?? [],
     graderSummary: {
       graders: node.graders ?? ["compile", "unit_test"],
@@ -193,6 +216,13 @@ export async function lintContent() {
     }
     if ((n.steps ?? []).length === 1) {
       problems.push(`${where}: steps 只有 1 步，要嘛寫完整、要嘛留空讓系統自動產生`);
+    }
+    // 每節至少 2 張複習卡：審計時發現有 6 節 0 張卡，等於那些主題沒有間隔複習
+    if ((n.cards ?? []).length < 2) {
+      problems.push(`${where}: 複習卡少於 2 張（cards）—— 這一節不會進到複習排程`);
+    }
+    for (const [i, c] of (n.cards ?? []).entries()) {
+      if (!c?.q || !c?.a) problems.push(`${where}: cards[${i}] 缺少 q 或 a`);
     }
     const graders = n.graders ?? ["compile", "unit_test"];
     if (graders.includes("unit_test") && !(await exists(path.join(n.dir, "tests.cpp")))) {

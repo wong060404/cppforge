@@ -74,5 +74,14 @@
     "簽章要與標頭一字不差（return type、parameter、`const`），否則會變成「另一個多載」而 link 失敗。"
   ],
   "steps": [],
-  "cards": []
+  "cards": [
+    {
+      "q": "為什麼這一節「compile 會過、link 才失敗」？",
+      "a": "compile 只檢查每個 translation unit 的語法與宣告 —— `square_area` 只要有 declaration（來自 `tasks.hpp`）就夠了。真正需要 definition 的是 **linker**：它要把所有 object file 的符號接起來，接不到就是 `undefined reference`。"
+    },
+    {
+      "q": "`undefined reference to 'square_area(int)'` 代表什麼？三個常見原因？",
+      "a": "linker 找不到這個函式的 **definition**。常見原因：①根本沒寫；②寫了但簽章不一致（`int` 與 `long` 是不同符號，`const` 與非 `const` 也可能不同）；③那個 `.cpp` 沒有被加進編譯命令。注意 `int`、`int` 之後的參數型別也構成簽章。"
+    }
+  ]
 }

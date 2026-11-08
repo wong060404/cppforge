@@ -71,5 +71,14 @@
     "return `optional` 時，呼叫端要先 `has_value()`；直接 `.value()` 在空的時候會丟 exception。"
   ],
   "steps": [],
-  "cards": []
+  "cards": [
+    {
+      "q": "「找不到」為什麼不該用 -1 或空字串表示？",
+      "a": "那是**魔法值**：型別上看不出「可能沒有值」，也無法和「合法的 -1」區分。std::optional<T> 把「有沒有值」編進型別，呼叫端被迫先判斷。"
+    },
+    {
+      "q": "回傳 std::optional 時，.value()、*p、\u000balue_or(d) 差在哪？",
+      "a": ".value() 在空的時候丟 std::bad_optional_access；*p 不檢查，空的時候是 UB；\u000balue_or(d) 回預設值、不丟例外。安全用法是先用 has_value() 判斷，或用 \u000balue_or。"
+    }
+  ]
 }
