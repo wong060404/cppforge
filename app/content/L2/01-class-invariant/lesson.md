@@ -80,4 +80,4 @@ int max_value() const;
 bool is_full() const;              // value_ == max_
 ```
 
-起始碼三個地方漏了：建構子沒驗證、`increment()` 沒夾住、`add()` 沒拒絕負數。
+起始碼三個地方漏了：constructor 沒驗證、`increment()` 沒夾住、`add()` 沒拒絕負數。

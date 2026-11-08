@@ -85,4 +85,4 @@ bool in_range(int x, int lo, int hi);   // x 是否在 [lo, hi] 內（含邊界�
 ```
 
 起始碼三個地方漏了：`int_pow` 起始值是 0、`max3` 的三段式寫法在 `a > b` 時漏掉一個值、
-`in_range` 用嚴格比較把邊界排除了。
+`in_range` 用嚴格比較把 boundary 排除了。

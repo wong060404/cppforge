@@ -94,4 +94,4 @@ std::vector<long long> parallel_fill(std::size_t n, unsigned k);
 ```
 
 起始碼三個地方漏了：`parallel_sum` 忽略餘數、`parallel_count` 用一般 `int`
-累加（沒有 atomic，而且有資料競爭）、`parallel_fill` 每段少填最後一個元素。
+累加（沒有 atomic，而且有 data race）、`parallel_fill` 每段少填最後一個 element。

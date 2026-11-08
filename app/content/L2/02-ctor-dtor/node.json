@@ -15,9 +15,9 @@
     "rule-of-three"
   ],
   "objectives": [
-    "說出解構函式在哪些時機被呼叫（正常返回、拋例外、提早 return）",
-    "寫出「建構子取得資源、解構函式釋放」的最小可用類別",
-    "知道為什麼這種手寫版本容易出錯（複製、例外、忘記 delete）"
+    "說出 destructor 在哪些時機被呼叫（正常返回、拋 exception、提早 return）",
+    "寫出「constructor 取得 resource、destructor deallocate」的最小可用 class",
+    "知道為什麼這種手寫版本容易出錯（複製、exception、忘記 delete）"
   ],
   "graders": [
     "compile",
@@ -46,7 +46,7 @@
   "drills": [
     {
       "kind": "choice",
-      "prompt": "物件在 `{ Buffer b(10); throw std::runtime_error(…); }` 中，解構函式會被呼叫嗎？",
+      "prompt": "object 在 `{ Buffer b(10); throw std::runtime_error(…); }` 中，destructor 會被呼叫嗎？",
       "choices": [
         "不會，程式已經跳到 catch",
         "會，stack unwinding 會呼叫它",
@@ -54,33 +54,34 @@
         "不一定"
       ],
       "answer": "會，stack unwinding 會呼叫它",
-      "explain": "例外離開 scope 時，編譯器保證會依反向順序呼叫所有已完成建構的區域物件解構函式（stack unwinding）。這正是 RAII 能在例外路徑也正確釋放資源的原因。"
+      "explain": "exception 離開 scope 時，compiler 保證會依反向順序呼叫所有已完成建構的 local object 的 destructor（stack unwinding）。這正是 RAII 能在 exception 路徑也正確 deallocate resource 的原因。"
     },
     {
       "kind": "choice",
       "prompt": "`~Buffer()` 裡少了 `delete[]`，這個問題什麼時候才會被發現？",
       "choices": [
-        "編譯期",
-        "連結期",
-        "執行期",
+        "compile time",
+        "link time",
+        "runtime",
         "永遠不會被發現"
       ],
-      "answer": "執行期",
-      "explain": "編譯器不會檢查「有 new 就要有 delete」，這不是語法問題。程式可能跑幾小時都正常，直到記憶體用盡 —— 所以要用工具（本課程的洩漏檢查）在測試階段抓出來。"
+      "answer": "runtime",
+      "explain": "compiler 不會檢查「有 new 就要有 delete」，這不是語法問題。程式可能跑幾小時都正常，直到記憶體用盡 —— 所以要用工具（本課程的 leak check）在測試階段抓出來。"
     }
   ],
   "cards": [
     {
-      "q": "解構函式會在哪些時機被呼叫？",
-      "a": "① 物件離開 scope（正常返回）；② **例外離開 scope**（stack unwinding，編譯器保證）；③ 提早 `return`；④ 成員物件隨所屬物件一起銷毀（反向順序）。這四種都涵蓋，才讓 RAII 在錯誤路徑上也安全。"
+      "q": "destructor 會在哪些時機被呼叫？",
+      "a": "① object 離開 scope（正常返回）；②**exception 離開 scope**（stack unwinding，compiler 保證）；③ 提早 `return`；④ member object 隨所屬 object 一起銷毀（反向順序）。這四種都涵蓋，才讓 RAII 在錯誤路徑上也安全。"
     },
     {
-      "q": "為什麼手寫 `new`/`delete` 的類別一定要處理複製？",
-      "a": "因為預設的複製建構子只會**複製指標**，兩個物件指向同一塊記憶體 → 兩次 `delete[]` = double free。這叫 rule of three：只要寫了「解構函式 / 複製建構子 / 複製賦值」其中之一，通常三個都要寫（或全部 `= delete`）。本節用 `= delete` 禁用複製，L2.03 改用 `std::unique_ptr` 讓編譯器自動處理。"
+      "q": "為什麼手寫 `new`/`delete` 的 class 一定要處理複製？",
+      "a": "因為預設的 copy constructor 只會**複製 pointer**，兩個 object 指向同一塊記憶體 → 兩次 `delete[]` = double free。這叫 rule of three：只要寫了「destructor / copy constructor / copy assignment」其中之一，通常三個都要寫（或全部 `= delete`）。本節用 `= delete` 禁用複製，L2.03 改用 `std::unique_ptr` 讓 compiler 自動處理。"
     }
   ],
   "hints": [
-    "解構函式要 `delete[] data_`。少了它測試會過，但「記憶體安全」那一列會 FAIL。",
-    "`set` 與 `at` 都要檢查 `i >= size_`，越界丟 `std::out_of_range`。"
-  ]
+    "destructor 要 `delete[] data_`。少了它測試會過，但「memory safety」那一列會 FAIL。",
+    "`set` 與 `at` 都要檢查 `i >= size_`，out of bounds 丟 `std::out_of_range`。"
+  ],
+  "steps": []
 }

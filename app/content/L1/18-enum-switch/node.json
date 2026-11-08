@@ -15,7 +15,7 @@
   ],
   "objectives": [
     "用 enum class 取代魔術數字，並知道它與 C 的 enum 差在哪",
-    "知道 switch 少了 default 時，編譯器能警告你漏掉的 case",
+    "知道 switch 少了 default 時，compiler 能 warning 你漏掉的 case",
     "理解為什麼「數值 +1」對 enum 是危險操作（會造出不合法的值）"
   ],
   "graders": [
@@ -46,38 +46,39 @@
       "prompt": "`enum class Direction { North, East, South, West };` 之後 `Direction d = 2;` 會怎樣？",
       "choices": [
         "d 變成 South",
-        "編譯錯誤（不能隱式轉整數）",
-        "執行期錯誤",
+        "compile error（不能隱式轉 integer）",
+        "runtime 錯誤",
         "d 變成 North"
       ],
-      "answer": "編譯錯誤（不能隱式轉整數）",
-      "explain": "這正是 `enum class` 相對 C 式 `enum` 的價值：它不會偷偷和整數互轉，必須寫 `static_cast<Direction>(2)`。C 式 enum 會讓 `d = 2` 默默地成立。"
+      "answer": "compile error（不能隱式轉 integer）",
+      "explain": "這正是 `enum class` 相對 C 式 `enum` 的價值：它不會偷偷和 integer 互轉，必須寫 `static_cast<Direction>(2)`。C 式 enum 會讓 `d = 2` 默默地成立。"
     },
     {
       "kind": "choice",
       "prompt": "`switch` 對 enum 少了某個 case、又沒有 default 時，GCC 會給什麼？",
       "choices": [
-        "編譯錯誤",
-        "-Wswitch 警告",
-        "-Wunused 警告",
+        "compile error",
+        "-Wswitch warning",
+        "-Wunused warning",
         "什麼都不會說"
       ],
-      "answer": "-Wswitch 警告",
-      "explain": "`-Wswitch`（包含在 `-Wall`）會指出漏掉的列舉值。但一旦你寫了 `default:`，這個檢查就失效了 —— 因為編譯器認為你已經處理所有情況。所以「窮舉式 switch 不加 default」是更好的寫法。"
+      "answer": "-Wswitch warning",
+      "explain": "`-Wswitch`（包含在 `-Wall`）會指出漏掉的 enumerator。但一旦你寫了 `default:`，這個檢查就失效了 —— 因為 compiler 認為你已經處理所有情況。所以「窮舉式 switch 不加 default」是更好的寫法。"
     }
   ],
   "cards": [
     {
       "q": "`enum class` 比 C 式 `enum` 好在哪？",
-      "a": "三個地方：① **具名作用域**（`Direction::North`，不會和別的 enum 撞名）；② **不會隱式轉成整數**（`int i = Direction::North` 編譯錯誤）；③ **不會從整數隱式轉進來**。代價是每次轉換都要 `static_cast`，而這正是你想要的保護。"
+      "a": "三個地方：①**具名 scope**（`Direction::North`，不會和別的 enum 撞名）；②**不會隱式轉成 integer**（`int i = Direction::North` compile error）；③**不會從 integer 隱式轉進來**。代價是每次轉換都要 `static_cast`，而這正是你想要的保護。"
     },
     {
       "q": "為什麼「把方位 +1 再轉回 enum」是不安全的？",
-      "a": "因為 enum 只保證列舉值存在，不保證加一之後還落在合法範圍。`West`（3）+1 = 4 已經不是任何 `Direction`，轉回去會得到一個**未定義的列舉值**，之後的 switch 就沒有 case 接得住。正確做法是先取模：`(v + 1) % 4`。"
+      "a": "因為 enum 只保證 enumerator 存在，不保證加一之後還落在合法範圍。`West`（3）+1 = 4 已經不是任何 `Direction`，轉回去會得到一個**undefined 的 enumerator**，之後的 switch 就沒有 case 接得住。正確做法是先取模：`(v + 1) % 4`。"
     }
   ],
   "hints": [
     "`enum class` 不會隱式轉成 int，所以 `West + 1` 不是合法寫法。",
-    "`switch` 對 enum 請把所有 case 列出、不要寫 `default`，這樣新增列舉值時 `-Wswitch` 會提醒你。"
-  ]
+    "`switch` 對 enum 請把所有 case 列出、不要寫 `default`，這樣新增 enumerator 時 `-Wswitch` 會提醒你。"
+  ],
+  "steps": []
 }

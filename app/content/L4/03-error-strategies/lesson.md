@@ -76,9 +76,9 @@ struct ParseOutcome { bool ok; int value; };
 
 ## 你要實作的部分
 
-三種契約、同一套規則：可選的正負號 + 一或多個十進位數字，整串都要是數字，
+三種 contract、同一套規則：可選的正負號 + 一或多個十進位數字，整串都要是數字，
 不可有空白，超出 `int` 範圍算失敗。
 
-起始碼三個地方漏了：`to_int_opt` 直接回傳 `std::stoi`（會拋例外、也會接受 `"12x"`）、
-`to_int_or_throw` 把例外吞掉改回 0（變成「永不失敗」）、
+起始碼三個地方漏了：`to_int_opt` 直接 return `std::stoi`（會拋 exception、也會接受 `"12x"`）、
+`to_int_or_throw` 把 exception 吞掉改回 0（變成「永不失敗」）、
 `to_int_outcome` 永遠回 `ok = true`。

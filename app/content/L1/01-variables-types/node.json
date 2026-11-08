@@ -16,9 +16,9 @@
   ],
   "objectives": [
     "分辨 int / double / bool / std::string 的用途與範圍",
-    "說出「宣告」與「初始化」的差別，並知道未初始化的值是不定的",
-    "知道整數除法與浮點除法會得到不同的結果",
-    "知道 bool 與整數之間會隱式轉換（0 為 false，非 0 為 true）"
+    "說出「declaration」與「initialization」的差別，並知道 uninitialized 的值是不定的",
+    "知道 integer division 與浮點除法會得到不同的結果",
+    "知道 bool 與 integer 之間會 implicit conversion（0 為 false，非 0 為 true）"
   ],
   "graders": [
     "compile",
@@ -30,15 +30,15 @@
     "tasks.hpp"
   ],
   "steps": [
-    "讀 `tasks.hpp`：三個函式的名字與回傳型別就是規格（`double` 不是 `int`）",
-    "先讓它編譯過：`-Werror` 會擋掉「隱式轉換」這類寫法",
-    "第一個測試是平均值 —— 檢查你的除法是整數除法還是浮點除法",
-    "第二個是 `bool` 函式 —— 檢查你回傳的是「餘數」還是「是否整除」"
+    "讀 `tasks.hpp`：三個 function 的名字與 return type 就是規格（`double` 不是 `int`）",
+    "先讓它 compile 過：`-Werror` 會擋掉「implicit conversion」這類寫法",
+    "第一個測試是平均值 —— 檢查你的除法是 integer division 還是浮點除法",
+    "第二個是 `bool` function —— 檢查你 return 的是「餘數」還是「是否整除」"
   ],
   "hints": [
-    "整數除整數永遠是整數：`(1 + 2 + 2) / 3` 是 `1`，不是 `1.666…`。要得到小數，至少一邊要先變成 `double`。",
-    "`x % 2` 的型別是 `int`（0 或 1），不是 `bool`。要回傳「是否為偶數」，應該比較 `x % 2 == 0`；直接回傳 `x % 2` 會讓奇數變成 true。",
-    "`describe_sign` 的邊界在 0：`x >= 0` 會把 0 判成正數。三個分支要分別處理 >0、<0、=0。"
+    "integer 除 integer 永遠得到 integer：`(1 + 2 + 2) / 3` 是 `1`，不是 `1.666…`。要得到小數，至少一邊要先變成 `double`。",
+    "`x % 2` 的 type 是 `int`（0 或 1），不是 `bool`。要 return「是否為偶數」，應該比較 `x % 2 == 0`；直接 return `x % 2` 會讓奇數變成 true。",
+    "`describe_sign` 的 boundary 在 0：`x >= 0` 會把 0 判成正數。三個 branch 要分別處理 >0、<0、=0。"
   ],
   "drills": [
     {
@@ -48,36 +48,36 @@
         "3.5",
         "3.0",
         "4.0",
-        "編譯錯誤"
+        "compile error"
       ],
       "answer": "3.0",
-      "explain": "`a / b` 是整數除法（兩邊都是 int）→ 得到 3，再轉成 double 就是 3.0。要得到 3.5 必須寫 `static_cast<double>(a) / b`。"
+      "explain": "`a / b` 是 integer division（兩邊都是 `int`）→ 得到 3，再轉成 double 就是 3.0。要得到 3.5 必須寫 `static_cast<double>(a) / b`。"
     },
     {
       "kind": "choice",
-      "prompt": "未初始化的區域變數 `int x;` 之後直接讀 `x`，值是什麼？",
+      "prompt": "uninitialized 的 local variable `int x;` 之後直接讀 `x`，值是什麼？",
       "choices": [
         "0",
-        "不定值（讀它是未定義行為）",
-        "上一次函式留下的值，可以安心使用",
-        "編譯錯誤"
+        "不定值（讀它是 undefined behavior）",
+        "上一次 function 留下的值，可以安心使用",
+        "compile error"
       ],
-      "answer": "不定值（讀它是未定義行為）",
-      "explain": "區域變數不會自動歸零。讀取未初始化的值是 UB，而且在不同優化等級下可能得到不同結果 —— 這是那種「在你機器上剛好是 0」的陷阱。"
+      "answer": "不定值（讀它是 undefined behavior）",
+      "explain": "local variable 不會自動歸零。讀取 uninitialized 的值是 UB，而且在不同 optimization level 下可能得到不同結果 —— 這是那種「在你機器上剛好是 0」的陷阱。"
     }
   ],
   "cards": [
     {
       "q": "`int`、`double`、`bool`、`std::string` 各自適合存什麼？",
-      "a": "`int` 存整數（約 ±21 億）；`double` 存有小數的數（浮點，精度有限）；`bool` 只有 `true`/`false`；`std::string` 存文字。選錯型別不會報錯，但會讓結果悄悄變樣 —— 例如用 `int` 存平均就永遠拿不到小數。"
+      "a": "`int` 存 integer（約 ±21 億）；`double` 存有小數的數（浮點，precision 有限）；`bool` 只有 `true`/`false`；`std::string` 存文字。選錯 type 不會報錯，但會讓結果悄悄變樣 —— 例如用 `int` 存平均就永遠拿不到小數。"
     },
     {
-      "q": "「宣告」與「初始化」有什麼差別？為什麼預設要初始化？",
-      "a": "宣告是「告訴編譯器有這個變數、型別是什麼」；初始化是「給它第一個值」。宣告後沒初始化，區域變數的值是**不定的**，讀它是未定義行為。習慣：宣告時就給值（`int x = 0;`），或用 `int x{};` 讓它歸零。"
+      "q": "「declaration」與「initialization」有什麼差別？為什麼預設要 initialization？",
+      "a": "declaration 是「告訴 compiler 有這個 variable、type 是什麼」；initialization 是「給它第一個值」。declaration 後沒 initialization，local variable 的值是**不定的**，讀它是 undefined behavior。習慣：declaration 時就給值（`int x = 0;`），或用 `int x{};` 讓它歸零。"
     },
     {
-      "q": "bool 與整數之間的隱式轉換會造成什麼 bug？",
-      "a": "`0` 會轉成 `false`、非 0 轉成 `true`。所以 `return x % 2;` 在 `x` 是奇數時回傳 `true` —— 這是「回傳餘數」卻被當成「是否為偶數」的經典錯誤。寫 `bool` 函式時，回傳的運算式本身要是比較（`x % 2 == 0`）。"
+      "q": "bool 與 integer 之間的 implicit conversion 會造成什麼 bug？",
+      "a": "`0` 會轉成 `false`、非 0 轉成 `true`。所以 `return x % 2;` 在 `x` 是奇數時 return `true` —— 這是「return 餘數」卻被當成「是否為偶數」的經典錯誤。寫 `bool` function 時，return 的運算式本身要是比較（`x % 2 == 0`）。"
     }
   ]
 }

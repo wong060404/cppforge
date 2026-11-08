@@ -16,9 +16,9 @@
   ],
   "objectives": [
     "同一件事用三種方式表達失敗，並說出各自的代價",
-    "知道 `std::stoi` 會接受部分解析（`\"12x\"` → 12）以及它會拋例外",
-    "說出「不拋例外」的介面必須在所有輸入上都不拋",
-    "知道為什麼錯誤碼版本要回傳 `{ok, value}` 而不是用魔法值 -1"
+    "知道 `std::stoi` 會接受部分解析（`\"12x\"` → 12）以及它會拋 exception",
+    "說出「不拋 exception」的 interface 必須在所有輸入上都不拋",
+    "知道為什麼錯誤碼版本要 return `{ok, value}` 而不是用魔法值 -1"
   ],
   "graders": [
     "compile",
@@ -48,43 +48,44 @@
       "kind": "choice",
       "prompt": "`std::stoi(\"12x\")` 的結果是什麼？",
       "choices": [
-        "丟例外",
-        "回傳 12（只解析到第一個非數字為止）",
-        "回傳 0",
-        "回傳 120"
+        "丟 exception",
+        "return 12（只解析到第一個非數字為止）",
+        "return 0",
+        "return 120"
       ],
-      "answer": "回傳 12（只解析到第一個非數字為止）",
-      "explain": "`stoi` 會盡可能解析。要確認「整串都被解析完」，必須用帶 `pos` 的版本：`std::size_t pos; int v = std::stoi(s, &pos); if (pos != s.size()) 失敗;`。這是字串轉數字最常見的漏洞。"
+      "answer": "return 12（只解析到第一個非數字為止）",
+      "explain": "`stoi` 會盡可能解析。要確認「整串都被解析完」，必須用帶 `pos` 的版本：`std::size_t pos; int v = std::stoi(s, &pos); if (pos != s.size()) 失敗;`。這是 string 轉數字最常見的漏洞。"
     },
     {
       "kind": "choice",
-      "prompt": "介面寫「失敗回 `nullopt`，絕不拋例外」，但實作丟了 `std::out_of_range`。這是什麼問題？",
+      "prompt": "interface 寫「失敗回 `nullopt`，絕不拋 exception」，但實作丟了 `std::out_of_range`。這是什麼問題？",
       "choices": [
         "效能問題",
-        "契約違反：呼叫端依介面沒有寫 try/catch，程式會直接終止",
+        "contract 違反：呼叫端依 interface 沒有寫 try/catch，程式會直接終止",
         "風格問題",
-        "編譯錯誤"
+        "compile error"
       ],
-      "answer": "契約違反：呼叫端依介面沒有寫 try/catch，程式會直接終止",
-      "explain": "介面是**合約**。呼叫端看到 `std::optional` 就會假設「不會拋」，於是沒有 try/catch；一旦真的拋，例外一路穿出去 → `std::terminate`。這比「回傳錯誤碼」更危險，因為失敗路徑完全沒被預期。"
+      "answer": "contract 違反：呼叫端依 interface 沒有寫 try/catch，程式會直接終止",
+      "explain": "interface 是**合約**。呼叫端看到 `std::optional` 就會假設「不會拋」，於是沒有 try/catch；一旦真的拋，exception 一路穿出去 → `std::terminate`。這比「return 錯誤碼」更危險，因為失敗路徑完全沒被預期。"
     }
   ],
   "cards": [
     {
-      "q": "什麼時候該用 `optional`、什麼時候該用例外、什麼時候該用錯誤碼？",
-      "a": "**optional**：失敗是「正常情況」（查詢不到、解析失敗），呼叫端通常會直接處理。**例外**：失敗是「異常且無法在當下處理」（檔案開不了、配置失敗），而且不該讓它污染每一層的簽章。**錯誤碼**：跨 ABI/語言邊界、需要避免例外的環境（嵌入式、部分遊戲引擎），或需要攜帶豐富錯誤資訊時。判斷點是「呼叫端能不能在這裡處理」。"
+      "q": "什麼時候該用 `optional`、什麼時候該用 exception、什麼時候該用錯誤碼？",
+      "a": "**optional**：失敗是「正常情況」（查詢不到、解析失敗），呼叫端通常會直接處理。**exception**：失敗是「異常且無法在當下處理」（檔案開不了、allocate 失敗），而且不該讓它污染每一層的簽章。**錯誤碼**：跨 ABI/語言 boundary、需要避免 exception 的環境（嵌入式、部分遊戲引擎），或需要攜帶豐富錯誤資訊時。判斷點是「呼叫端能不能在這裡處理」。"
     },
     {
-      "q": "為什麼錯誤碼不該用「回傳 -1 代表失敗」？",
-      "a": "因為 -1 是合法值。若函式是「解析整數」，`-1` 本身就能被解析出來，呼叫端無法區分「解析出 -1」與「失敗」。正確做法是回傳 `{ok, value}` 或 `expected<T, E>`，把「有沒有值」與「值是什麼」分開 —— 這也是 `std::optional` 在型別層面做的事。"
+      "q": "為什麼錯誤碼不該用「return -1 代表失敗」？",
+      "a": "因為 -1 是合法值。若 function 是「解析 integer」，`-1` 本身就能被解析出來，呼叫端無法區分「解析出 -1」與「失敗」。正確做法是 return `{ok, value}` 或 `expected<T, E>`，把「有沒有值」與「值是什麼」分開 —— 這也是 `std::optional` 在 type 層面做的事。"
     },
     {
       "q": "`std::stoi` 有哪兩個容易踩的特性？",
-      "a": "① **部分解析**：`\"12x\"` 回傳 12 而不報錯（要用 `pos` 檢查是否整串解析完）；② **拋例外**：空字串丟 `invalid_argument`、超出範圍丟 `out_of_range`。所以「用 stoi 實作一個不拋例外的解析器」一定要自己包 try/catch，或干脆自己逐字元解析。"
+      "a": "①**部分解析**：`\"12x\"` return 12 而不報錯（要用 `pos` 檢查是否整串解析完）；②**拋 exception**：empty string 丟 `invalid_argument`、超出範圍丟 `out_of_range`。所以「用 stoi 實作一個不拋 exception 的解析器」一定要自己包 try/catch，或干脆自己逐 character 解析。"
     }
   ],
   "hints": [
-    "三個函式共用同一套解析規則：可選正負號 + 至少一位數字，整串都要是數字。",
-    "`std::stoi` 會接受部分解析（`12x` → 12）而且會拋例外，所以不能直接用。"
-  ]
+    "三個 function 共用同一套解析規則：可選正負號 + 至少一位數字，整串都要是數字。",
+    "`std::stoi` 會接受部分解析（`12x` → 12）而且會拋 exception，所以不能直接用。"
+  ],
+  "steps": []
 }

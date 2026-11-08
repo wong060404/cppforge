@@ -54,7 +54,7 @@ int  at(std::size_t i) const;     // i >= size() → throw std::out_of_range
 std::size_t size() const;
 ```
 
-起始碼：解構函式沒釋放、`set()` 與 `at()` 都少了邊界檢查。
+起始碼：destructor 沒 deallocate、`set()` 與 `at()` 都少了 boundary 檢查。
 
-> 評測會用洩漏檢查跑一次測試。這是本課程唯一能抓到「忘記 delete」的手段 ——
+> 評測會用 leak check 跑一次測試。這是本課程唯一能抓到「忘記 delete」的手段——
 > Windows 上的 MinGW 沒有 ASan，所以我們用 `operator new` 攔截來做（見 POC 報告 §3）。

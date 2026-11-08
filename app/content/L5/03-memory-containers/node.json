@@ -15,9 +15,9 @@
     "no-manual-new"
   ],
   "objectives": [
-    "知道 `push_back` 的攤銷 O(1) 背後是「重新配置 + 搬移」",
-    "用 `reserve` 把已知大小的結果一次配置好",
-    "分辨「回傳新容器」與「就地修改」兩種介面，並選對",
+    "知道 `push_back` 的攤銷 O(1) 背後是「重新 allocate + 搬移」",
+    "用 `reserve` 把已知大小的結果一次 allocate 好",
+    "分辨「return 新 container」與「就地修改」兩種 interface，並選對",
     "知道什麼時候不該用 `std::list`（幾乎總是）"
   ],
   "graders": [
@@ -68,38 +68,39 @@
       "prompt": "`push_back` 的「攤銷 O(1)」是什麼意思？",
       "choices": [
         "每次 push_back 都是 O(1)",
-        "大部分是 O(1)，偶爾一次 O(n)（重新配置 + 搬移），平均下來是 O(1)",
+        "大部分是 O(1)，偶爾一次 O(n)（重新 allocate + 搬移），平均下來是 O(1)",
         "總共是 O(1)",
         "只在 vector 為空時是 O(1)"
       ],
-      "answer": "大部分是 O(1)，偶爾一次 O(n)（重新配置 + 搬移），平均下來是 O(1)",
-      "explain": "vector 滿了會配置更大的空間（通常是 2 倍）並搬移所有元素 —— 那一次是 O(n)。但因為容量倍增，n 次 push 總搬移量是 O(n)，平均每次 O(1)。若你**知道**最終大小，`reserve(n)` 可以把所有搬移省掉。"
+      "answer": "大部分是 O(1)，偶爾一次 O(n)（重新 allocate + 搬移），平均下來是 O(1)",
+      "explain": "vector 滿了會 allocate 更大的空間（通常是 2 倍）並搬移所有 element —— 那一次是 O(n)。但因為 capacity 倍增，n 次 push 總搬移量是 O(n)，平均每次 O(1)。若你**知道**最終大小，`reserve(n)` 可以把所有搬移省掉。"
     },
     {
       "kind": "choice",
       "prompt": "為什麼 `std::list` 通常不是好選擇？",
       "choices": [
-        "它不能存自訂型別",
-        "每個節點各自配置（cache miss）+ 額外指標，走訪比 vector 慢很多",
+        "它不能存自訂 type",
+        "每個節點各自 allocate（cache miss）+ 額外 pointer，走訪比 vector 慢很多",
         "它不支援 push_back",
-        "它執行緒不安全"
+        "它 thread 不安全"
       ],
-      "answer": "每個節點各自配置（cache miss）+ 額外指標，走訪比 vector 慢很多",
+      "answer": "每個節點各自 allocate（cache miss）+ 額外 pointer，走訪比 vector 慢很多",
       "explain": "`std::list` 只在「大量在中間插入/刪除，且不需要走訪」時才有優勢。現代 CPU 的記憶體階層讓連續記憶體（vector）快得多 —— 實測常常快 5–10 倍。預設選 vector，除非你量測過。"
     }
   ],
   "cards": [
     {
       "q": "`reserve` 與 `resize` 的差別？",
-      "a": "`reserve(n)` 只改**容量**（capacity），不改元素個數（size），元素仍然需要 `push_back` 才能放進去。`resize(n)` 會真的改變元素個數（新增的預設初始化）。想「先配置、再填值」用 reserve；想「直接有一堆元素」用 resize。"
+      "a": "`reserve(n)` 只改**capacity**（capacity），不改 element 個數（size），element 仍然需要 `push_back` 才能放進去。`resize(n)` 會真的改變 element 個數（新增的預設 initialization）。想「先 allocate、再填值」用 reserve；想「直接有一堆 element」用 resize。"
     },
     {
-      "q": "什麼時候該「就地修改」，什麼時候該「回傳新容器」？",
-      "a": "看呼叫端是否還需要原資料。若不需要（例如排序自己的資料），就地修改省一次配置與複製。若需要保留原始版本（或輸入是 `const&`），才回傳新容器。介面簽章就決定了這件事：`void f(std::vector<int>&)` 表示就地，`std::vector<int> f(const std::vector<int>&)` 表示新的一份。"
+      "q": "什麼時候該「就地修改」，什麼時候該「return 新 container」？",
+      "a": "看呼叫端是否還需要原資料。若不需要（例如 sort 自己的資料），就地修改省一次 allocate 與複製。若需要保留原始版本（或輸入是 `const&`），才 return 新 container。interface 簽章就決定了這件事：`void f(std::vector<int>&)` 表示就地，`std::vector<int> f(const std::vector<int>&)` 表示新的一份。"
     }
   ],
   "hints": [
-    "已知大小的結果先 `reserve`；少了它 `push_back` 會反覆重新配置。",
-    "`evens` 的條件是「餘數為 0」；`sort_in_place` 要由小到大（`std::sort` 預設就是）。"
-  ]
+    "已知大小的結果先 `reserve`；少了它 `push_back` 會反覆重新 allocate。",
+    "`evens` 的 condition 是「餘數為 0」；`sort_in_place` 要由小到大（`std::sort` 預設就是）。"
+  ],
+  "steps": []
 }

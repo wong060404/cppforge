@@ -78,5 +78,5 @@ std::string most_common(const std::map<std::string, int>& m);
 
 起始碼三個地方漏了：`count_of` 用了 `count()`（只給 0/1）、`bump` 用了 `insert`（不會累加）、`keys_in_order` 收集了 value 而不是 key。
 
-> `most_common()` 在起始碼裡是**對的** —— 它示範「利用 map 的排序」這件事，
+> `most_common()` 在起始碼裡是**對的**—— 它示範「利用 map 的 sort」這件事，
 > 也是本節最重要的一行：`if (v > bestCount)`。

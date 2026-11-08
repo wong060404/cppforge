@@ -52,6 +52,6 @@ void RingBuffer::push(int value) {
 
 ## 你要做的事
 
-修好 `submission.cpp` 裡的三個 bug，讓 `RingBuffer` 符合介面語意。
+修好 `submission.cpp` 裡的三個 bug，讓 `RingBuffer` 符合 interface 語意。
 
-測試會特別檢查這些邊界：容量 1、剛滿、連續覆寫一整圈、push 超過容量 100 次。
+測試會特別檢查這些 boundary：capacity 1、剛滿、連續覆寫一整圈、push 超過 capacity 100 次。

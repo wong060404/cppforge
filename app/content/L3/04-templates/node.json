@@ -15,10 +15,10 @@
     "implicit-instantiation"
   ],
   "objectives": [
-    "寫出函式樣板，讓同一份程式碼同時支援 int、double、std::string",
-    "知道為什麼樣板的**定義**必須放在標頭檔（與一般函式相反）",
-    "用 C++20 的 `concept` + `requires` 表達「這個型別必須支援什麼」",
-    "知道限制條件太寬時，錯誤訊息會在**具現化**時才爆出來"
+    "寫出 function template，讓同一份程式碼同時支援 int、double、std::string",
+    "知道為什麼 template 的**definition**必須放在 header file（與一般 function 相反）",
+    "用 C++20 的 `concept` + `requires` 表達「這個 type 必須支援什麼」",
+    "知道限制 condition 太寬時，錯誤訊息會在**具現化**時才爆出來"
   ],
   "graders": [
     "compile",
@@ -47,15 +47,15 @@
   "drills": [
     {
       "kind": "choice",
-      "prompt": "為什麼樣板的定義通常放在 `.hpp` 而不是 `.cpp`？",
+      "prompt": "為什麼 template 的 definition 通常放在 `.hpp` 而不是 `.cpp`？",
       "choices": [
-        "編譯比較快",
-        "因為編譯器必須在使用處看到定義才能具現化",
+        "compile 比較快",
+        "因為 compiler 必須在使用處看到 definition 才能具現化",
         "只是習慣",
-        "為了避免重複定義"
+        "為了避免重複 definition"
       ],
-      "answer": "因為編譯器必須在使用處看到定義才能具現化",
-      "explain": "樣板不是程式碼，是「產生程式碼的樣板」。編譯器在 `sum_all<int>(v)` 出現的地方才生成 `int` 版本，所以必須看得到完整定義。放進 .cpp 會編譯過（該 TU 沒人用），但連結時找不到符號。"
+      "answer": "因為 compiler 必須在使用處看到 definition 才能具現化",
+      "explain": "template 不是程式碼，是「產生程式碼的 template」。compiler 在 `sum_all<int>(v)` 出現的地方才生成 `int` 版本，所以必須看得到完整 definition。放進 .cpp 會 compile 過（該 TU 沒人用），但 link 時找不到符號。"
     },
     {
       "kind": "choice",
@@ -67,25 +67,26 @@
         "inline"
       ],
       "answer": "concept",
-      "explain": "`Addable` 是 C++20 的 **concept**（具名約束）。它讓「這個型別必須支援 `a + b`」變成介面的一部分，錯誤會在呼叫處就報出來，而不是在樣板內部深處噴出幾十行。"
+      "explain": "`Addable` 是 C++20 的**concept**（具名約束）。它讓「這個 type 必須支援 `a + b`」變成 interface 的一部分，錯誤會在呼叫處就報出來，而不是在 template 內部深處噴出幾十行。"
     }
   ],
   "cards": [
     {
-      "q": "為什麼樣板的定義要放在標頭檔？",
-      "a": "因為樣板不是可執行的程式碼，而是**產生程式碼的樣板**。編譯器在 `sum_all<int>(v)` 這個具現化點才生成 `int` 版本 —— 它必須在那一刻看得到完整定義。放進 `.cpp` 會編譯通過（那個 TU 沒人使用），但連結時會找不到符號。"
+      "q": "為什麼 template 的 definition 要放在 header file？",
+      "a": "因為 template 不是可執行的程式碼，而是**產生程式碼的 template**。compiler 在 `sum_all<int>(v)` 這個具現化點才生成 `int` 版本 —— 它必須在那一刻看得到完整 definition。放進 `.cpp` 會 compile 通過（那個 TU 沒人使用），但 link 時會找不到符號。"
     },
     {
       "q": "C++20 的 `concept` 解決了什麼問題？",
-      "a": "解決「錯誤訊息出現在錯誤的地方」。沒有約束時，傳入不支援 `+` 的型別會在樣板內部深處噴出幾十行錯誤；有了 `concept`，錯誤直接指向**呼叫端**，並說明「T 不滿足 Addable」。代價是約束要寫對，否則會限制過度。"
+      "a": "解決「錯誤訊息出現在錯誤的地方」。沒有約束時，傳入不支援 `+` 的 type 會在 template 內部深處噴出幾十行錯誤；有了 `concept`，錯誤直接指向**呼叫端**，並說明「T 不滿足 Addable」。代價是約束要寫對，否則會限制過度。"
     },
     {
       "q": "`requires(T a, T b) { { a + b } -> std::convertible_to<T>; }` 在檢查什麼？",
-      "a": "檢查兩件事：① `a + b` 這個表達式必須能編譯；② 它的結果必須能轉成 `T`（複合需求，`->` 後面接型別約束）。只檢查 ① 會讓 `int + double` 這種「能算但型別變了」的情況混進來。"
+      "a": "檢查兩件事：① `a + b` 這個表達式必須能 compile；② 它的結果必須能轉成 `T`（複合需求，`->` 後面接 type 約束）。只檢查 ① 會讓 `int + double` 這種「能算但 type 變了」的情況混進來。"
     }
   ],
   "hints": [
-    "迴圈從索引 0 開始；`greater_than` 用嚴格 `>`；`min_max` 回傳 `{min, max}`（順序別反）。",
-    "這一節提交的是 `.hpp`：樣板的定義必須讓使用處看得到，否則連結失敗。"
-  ]
+    "loop 從 index 0 開始；`greater_than` 用嚴格 `>`；`min_max` return `{min, max}`（順序別反）。",
+    "這一節提交的是 `.hpp`：template 的 definition 必須讓使用處看得到，否則 link 失敗。"
+  ],
+  "steps": []
 }

@@ -14,9 +14,9 @@
     "empty-container"
   ],
   "objectives": [
-    "知道 vector 的 size() 回傳無號的 std::size_t，以及它與 int 混用的後果",
-    "分辨「未定義行為」與「一定崩潰」——越界讀取通常不會立刻爆",
-    "正確處理空容器這個邊界條件"
+    "知道 vector 的 size() return unsigned 的 std::size_t，以及它與 int 混用的後果",
+    "分辨「undefined behavior」與「一定崩潰」 —— out of bounds 讀取通常不會立刻爆",
+    "正確處理空 container 這個 boundary condition"
   ],
   "graders": [
     "compile",
@@ -44,7 +44,7 @@
   "drills": [
     {
       "kind": "choice",
-      "prompt": "`std::vector<int> v(3);` 之後 `v.size() - 1` 的型別是什麼？",
+      "prompt": "`std::vector<int> v(3);` 之後 `v.size() - 1` 的 type 是什麼？",
       "choices": [
         "int",
         "size_t",
@@ -52,37 +52,38 @@
         "unsigned char"
       ],
       "answer": "size_t",
-      "explain": "size() 回傳 size_type（通常是 size_t，無號）。空 vector 時 `v.size() - 1` 不會是 -1，而是 18446744073709551615。"
+      "explain": "size() return size_type（通常是 size_t，unsigned）。空 vector 時 `v.size() - 1` 不會是 -1，而是 18446744073709551615。"
     },
     {
       "kind": "choice",
-      "prompt": "`v[3]` 越界讀取，最常見的結果是？",
+      "prompt": "`v[3]` out of bounds 讀取，最常見的結果是？",
       "choices": [
         "立刻崩潰並印出訊息",
-        "編譯錯誤",
+        "compile error",
         "安靜地讀到別的記憶體，程式繼續跑",
-        "拋出 std::out_of_range"
+        "throw std::out_of_range"
       ],
       "answer": "安靜地讀到別的記憶體，程式繼續跑",
-      "explain": "`operator[]` 不做邊界檢查（這是它比 at() 快的原因）。越界是未定義行為——可能拿到垃圾值、可能崩潰、可能看起來正常。要檢查請用 `at()`。"
+      "explain": "`operator[]` 不做 boundary 檢查（這是它比 at() 快的原因）。out of bounds 是 undefined behavior —— 可能拿到垃圾值、可能崩潰、可能看起來正常。要檢查請用 `at()`。"
     }
   ],
   "cards": [
     {
-      "q": "`std::vector<int> v(3);` 之後 `v.size() - 1` 的型別與值是什麼？",
-      "a": "型別是 `std::size_t`（無號），值是 `2`。但如果 `v` 是**空的**，`v.size() - 1` 不是 `-1`，而是 `18446744073709551615` —— 這是 `size_t` 下溢，會讓迴圈直接失控。"
+      "q": "`std::vector<int> v(3);` 之後 `v.size() - 1` 的 type 與值是什麼？",
+      "a": "type 是 `std::size_t`（unsigned），值是 `2`。但如果 `v` 是**空的**，`v.size() - 1` 不是 `-1`，而是 `18446744073709551615` —— 這是 `size_t` underflow，會讓 loop 直接失控。"
     },
     {
       "q": "`v[i]` 與 `v.at(i)` 的差別是什麼？什麼情況該用哪個？",
-      "a": "`v[i]` 不做邊界檢查（快，越界是未定義行為）；`v.at(i)` 檢查邊界，越界丟 `std::out_of_range`。**索引來自外部輸入或可能算錯時用 `at()`**；已證明在範圍內、且在熱路徑時用 `[]`。"
+      "a": "`v[i]` 不做 boundary 檢查（快，out of bounds 是 undefined behavior）；`v.at(i)` 檢查 boundary，out of bounds 丟 `std::out_of_range`。**index 來自外部輸入或可能算錯時用 `at()`**；已證明在範圍內、且在熱路徑時用 `[]`。"
     },
     {
-      "q": "為什麼「最大值」函式用 `int best = 0;` 當種子會錯？",
-      "a": "當所有元素都是負數時（例如 `{-5, -3, -8}`），`x > 0` 永遠不成立，`best` 會停在 0 —— 但 0 根本不在資料裡。正確做法是用第一個元素當種子，或初始化成 `std::numeric_limits<int>::min()`。"
+      "q": "為什麼「最大值」 function 用 `int best = 0;` 當種子會錯？",
+      "a": "當所有 element 都是負數時（例如 `{-5, -3, -8}`），`x > 0` 永遠不成立，`best` 會停在 0 —— 但 0 根本不在資料裡。正確做法是用第一個 element 當種子，或 initialization 成 `std::numeric_limits<int>::min()`。"
     }
   ],
   "hints": [
-    "`v[i]` 不檢查邊界；要檢查就用 `v.at(i)`（越界丟例外），或先寫 `if (i < v.size())`。",
-    "`v.size() - 1` 的型別是 `size_t`（無號）。`v` 是空的時候它會變成非常大的數。"
-  ]
+    "`v[i]` 不檢查 boundary；要檢查就用 `v.at(i)`（out of bounds 丟 exception），或先寫 `if (i < v.size())`。",
+    "`v.size() - 1` 的 type 是 `size_t`（unsigned）。`v` 是空的時候它會變成非常大的數。"
+  ],
+  "steps": []
 }

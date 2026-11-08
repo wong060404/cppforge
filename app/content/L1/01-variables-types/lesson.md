@@ -74,5 +74,5 @@ bool   is_even(int x);                     // x 是否為偶數
 std::string describe_sign(int x);          // "negative" / "zero" / "positive"
 ```
 
-起始碼三個地方漏了：平均值用了整數除法、`is_even` 回傳餘數而不是比較結果、
+起始碼三個地方漏了：平均值用了 integer division、`is_even` return 餘數而不是比較結果、
 `describe_sign` 把 0 判成正數。

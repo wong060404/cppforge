@@ -64,4 +64,4 @@ double real_average(int a, int b);
 int percent(int part, int whole);
 ```
 
-起始碼三個都寫好了，但都有微妙的錯誤。測試會精準地指出是哪一個 —— 特別是 `int_average(1, 1)` 這個看起來毫無意義的案例。
+起始碼三個都寫好了，但都有微妙的錯誤。測試會精準地指出是哪一個—— 特別是 `int_average(1, 1)` 這個看起來毫無意義的案例。

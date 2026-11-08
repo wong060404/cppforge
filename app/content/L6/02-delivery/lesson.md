@@ -73,4 +73,4 @@ std::sort(rows.begin(), rows.end(), [](const Row& a, const Row& b) {
 ## 你要做的事
 
 直接把 `submission.cpp` 改成符合規格的版本。起始碼能跑、也能輸出東西，
-但：同名沒有合併、排序方向相反、金額用 `int`。
+但：同名沒有合併、sort 方向相反、金額用 `int`。

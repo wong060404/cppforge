@@ -80,5 +80,5 @@ ScopeGuard make_guard(std::function<void()> action);   // 移動語意練習
 | 漏掉的地方 | 症狀 |
 |---|---|
 | 解構時不看旗標 | 呼叫 `release()` 之後，清理還是執行了 |
-| 移動建構子不清來源 | 同一段清理被執行**兩次** |
-| 移動賦值不清來源 | 被移走的 guard 仍然 `active() == true` |
+| move constructor 不清來源 | 同一段清理被執行**兩次** |
+| move assignment 不清來源 | 被移走的 guard 仍然 `active() == true` |

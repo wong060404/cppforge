@@ -92,5 +92,5 @@ std::optional<std::pair<T, T>> top_two(const std::vector<T>& v);
 //   必須在 O(n) 比較次數內完成
 ```
 
-起始碼兩個地方不合格：`count_duplicates` 是雙迴圈（O(n²)），
-`top_two` 先排序再取最後兩個（O(n log n)，而且遇到重複最大值會回傳兩個一樣的數）。
+起始碼兩個地方不合格：`count_duplicates` 是雙 loop（O(n²)），
+`top_two` 先 sort 再取最後兩個（O(n log n)，而且遇到重複最大值會 return 兩個一樣的數）。

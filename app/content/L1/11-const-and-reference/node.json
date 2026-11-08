@@ -14,7 +14,7 @@
     "in-place-mutation"
   ],
   "objectives": [
-    "分辨「傳值」與「傳參考」對呼叫者的影響",
+    "分辨「pass by value」與「pass by reference」對呼叫者的影響",
     "知道什麼時候用 const&（讀）、什麼時候用 &（寫）",
     "認出就地修改最常見的兩種錯：改了副本、覆蓋掉原值"
   ],
@@ -43,19 +43,19 @@
   "drills": [
     {
       "kind": "choice",
-      "prompt": "`void f(std::string s)` 與 `void f(std::string& s)`，哪一個能改到呼叫者的變數？",
+      "prompt": "`void f(std::string s)` 與 `void f(std::string& s)`，哪一個能改到呼叫者的 variable？",
       "choices": [
-        "傳值那個",
-        "傳參考那個",
+        "pass by value 那個",
+        "pass by reference 那個",
         "兩個都可以",
         "兩個都不行"
       ],
-      "answer": "傳參考那個",
-      "explain": "傳值會複製一份，改的是副本；函式結束副本就消失。要改呼叫者的變數必須傳參考（或指標）。"
+      "answer": "pass by reference 那個",
+      "explain": "pass by value 會複製一份，改的是副本；function 結束副本就消失。要改呼叫者的 variable 必須 pass by reference（或 pointer）。"
     },
     {
       "kind": "choice",
-      "prompt": "只想「讀」一個大物件而不想複製，參數該宣告成什麼？",
+      "prompt": "只想「讀」一個大 object 而不想複製，parameter 該 declaration 成什麼？",
       "choices": [
         "T",
         "T&",
@@ -63,7 +63,7 @@
         "const T* const"
       ],
       "answer": "const T&",
-      "explain": "`const T&` 同時做到：不複製（省成本）、不可修改（保護資料），也能接受 const 物件。"
+      "explain": "`const T&` 同時做到：不複製（省成本）、不可修改（保護資料），也能接受 const object。"
     },
     {
       "kind": "choice",
@@ -72,28 +72,29 @@
         "成功交換",
         "兩個都變成 a 的值",
         "兩個都變成 b 的值",
-        "編譯錯誤"
+        "compile error"
       ],
       "answer": "兩個都變成 b 的值",
-      "explain": "第一行就把 a 的原值覆蓋掉了，第二行只是把 b 再寫一次。必須先用暫存變數保住 a 的原值。"
+      "explain": "第一行就把 a 的原值覆蓋掉了，第二行只是把 b 再寫一次。必須先用暫存 variable 保住 a 的原值。"
     }
   ],
   "cards": [
     {
       "q": "`void f(std::string s)`、`void f(std::string& s)`、`void f(const std::string& s)` 三者的差別？",
-      "a": "**傳值**：複製一份，改不到呼叫者。**傳參考**：直接改呼叫者的變數。**傳 const 參考**：不複製也不可修改，且能接受 const 物件。經驗法則：預設用 `const&`，需要寫入時才拿掉 const。"
+      "a": "**pass by value**：複製一份，改不到呼叫者。**pass by reference**：直接改呼叫者的 variable。**傳 const reference**：不複製也不可修改，且能接受 const object。經驗法則：預設用 `const&`，需要寫入時才拿掉 const。"
     },
     {
       "q": "為什麼 `void add_bang(std::string& s) { std::string r = s; r += '!'; }` 是錯的？",
-      "a": "因為 `r` 是**區域變數**，函式結束就消失。你改了副本卻沒有寫回 `s`。編譯器完全不會警告 —— 型別都對。正確寫法是直接改 `s`：`s += '!';`。"
+      "a": "因為 `r` 是**local variable**，function 結束就消失。你改了副本卻沒有寫回 `s`。compiler 完全不會 warning —— type 都對。正確寫法是直接改 `s`：`s += '!';`。"
     },
     {
-      "q": "`a = b; b = a;` 為什麼不能交換兩個變數？正確怎麼寫？",
-      "a": "第一行就把 `a` 的原始值覆蓋掉了，第二行只是把 `b` 再寫一次，結果兩個都變成 `b`。需要用暫存變數：`const int tmp = a; a = b; b = tmp;`（這也是 `std::swap` 存在的原因）。"
+      "q": "`a = b; b = a;` 為什麼不能交換兩個 variable？正確怎麼寫？",
+      "a": "第一行就把 `a` 的原始值覆蓋掉了，第二行只是把 `b` 再寫一次，結果兩個都變成 `b`。需要用暫存 variable：`const int tmp = a; a = b; b = tmp;`（這也是 `std::swap` 存在的原因）。"
     }
   ],
   "hints": [
-    "參數寫 `T` 是複製一份；寫 `T&` 才是改到呼叫者。看介面決定要用哪個。",
-    "`a = b; b = a;` 不是交換 —— 第一個賦值就把 `a` 的舊值蓋掉了。用暫存變數或 `std::swap`。"
-  ]
+    "parameter 寫 `T` 是複製一份；寫 `T&` 才是改到呼叫者。看 interface 決定要用哪個。",
+    "`a = b; b = a;` 不是交換 —— 第一個 assignment 就把 `a` 的舊值蓋掉了。用暫存 variable 或 `std::swap`。"
+  ],
+  "steps": []
 }

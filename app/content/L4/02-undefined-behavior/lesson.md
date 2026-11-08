@@ -92,6 +92,6 @@ std::optional<int> safe_at(const std::vector<int>& v, std::size_t i);  // 越界
 unsigned char clamp_byte(int x);                             // 夾到 [0, 255]
 ```
 
-起始碼三個地方漏了：`midpoint` 先相加再除（溢位）、`clamp_byte` 直接轉型沒有夾住
-（負數會變成 255 附近的大數）、`safe_at` 用 `v.at()`（越界拋例外，介面要求回 `nullopt`）。
-還有一個 `first_of`：測試完全正常，但每次呼叫都洩漏一塊記憶體。
+起始碼三個地方漏了：`midpoint` 先相加再除（overflow）、`clamp_byte` 直接轉型沒有夾住
+（負數會變成 255 附近的大數）、`safe_at` 用 `v.at()`（out of bounds 拋 exception，interface 要求回 `nullopt`）。
+還有一個 `first_of`：測試完全正常，但每次呼叫都 leak 一塊記憶體。

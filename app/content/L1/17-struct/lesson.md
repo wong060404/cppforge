@@ -62,4 +62,4 @@ int rect_area(const Rect& r);              // 反向矩形回傳 0
 bool rect_contains(const Rect& r, Point p); // 含邊界
 ```
 
-起始碼：一個距離公式寫錯、一個沒處理反向矩形、一個邊界用嚴格小於。
+起始碼：一個距離公式寫錯、一個沒處理反向矩形、一個 boundary 用嚴格小於。

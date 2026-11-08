@@ -93,5 +93,5 @@ std::pair<T, T> min_max(const std::vector<T>& v);
 //   回傳 {最小值, 最大值}；空 vector 回傳 {T{}, T{}}
 ```
 
-起始碼三個地方漏了：`sum_all` 的迴圈從索引 1 開始（漏掉第一個元素）、
+起始碼三個地方漏了：`sum_all` 的 loop 從 index 1 開始（漏掉第一個 element）、
 `greater_than` 用了 `>=`、`min_max` 把兩個值的位置放反了。

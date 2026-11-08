@@ -76,6 +76,6 @@ bool any_negative(const std::vector<int>& v);                       // 是否有
 int max_or_zero(const std::vector<int>& v);                         // 最大值；空容器回 0
 ```
 
-起始碼三個地方漏了：`count_even` 的謂詞寫反、`sorted_copy` 忘了排序、`any_negative` 用了 `all_of`。
+起始碼三個地方漏了：`count_even` 的謂詞寫反、`sorted_copy` 忘了 sort、`any_negative` 用了 `all_of`。
 
-> `max_or_zero()` 在起始碼裡是**對的** —— 它示範了「回傳迭代器的演算法要檢查 `end()`」這個模式。
+> `max_or_zero()` 在起始碼裡是**對的**—— 它示範了「return iterator 的 algorithm 要檢查 `end()`」這個模式。

@@ -15,8 +15,8 @@
   ],
   "objectives": [
     "分辨半開區間 [from, to) 與閉區間 [from, to] 的差別，並在程式碼中貫徹",
-    "知道為什麼多數 C++ 介面用半開區間",
-    "用提前返回（guard clause）處理空區間，避免在迴圈裡塞判斷"
+    "知道為什麼多數 C++ interface 用半開區間",
+    "用提前返回（guard clause）處理空區間，避免在 loop 裡塞判斷"
   ],
   "graders": [
     "compile",
@@ -43,7 +43,7 @@
   "drills": [
     {
       "kind": "choice",
-      "prompt": "迴圈 `for (int i = 0; i <= v.size(); ++i)` 在 `v.size() == 3` 時會跑幾次？",
+      "prompt": "loop `for (int i = 0; i <= v.size(); ++i)` 在 `v.size() == 3` 時會跑幾次？",
       "choices": [
         "3",
         "4",
@@ -51,7 +51,7 @@
         "無限次"
       ],
       "answer": "4",
-      "explain": "i = 0,1,2,3 共 4 次。最後一次造訪 v[3]，越界。正確寫法是 `i < v.size()`。"
+      "explain": "i = 0,1,2,3 共 4 次。最後一次造訪 v[3]，out of bounds。正確寫法是 `i < v.size()`。"
     },
     {
       "kind": "choice",
@@ -60,14 +60,16 @@
         "效能比較好",
         "空區間可以自然表示成 begin == end",
         "歷史遺留，沒有理由",
-        "避免編譯器警告"
+        "避免 compiler warning"
       ],
       "answer": "空區間可以自然表示成 begin == end",
-      "explain": "半開區間讓「空」不需要特例：`begin == end` 就是空。若用閉區間，空區間得用 `begin > end` 表示，所有迴圈都要多寫一個條件。"
+      "explain": "半開區間讓「空」不需要特例：`begin == end` 就是空。若用閉區間，空區間得用 `begin > end` 表示，所有 loop 都要多寫一個 condition。"
     }
   ],
   "hints": [
-    "`<` 與 `<=` 的差別就是「含不含邊界」；把邊界值代進去，用中文念一次。",
-    "空容器是必測邊界：迴圈不跑，但你在迴圈前若先讀了 `v[0]` 就會出錯。"
-  ]
+    "`<` 與 `<=` 的差別就是「含不含 boundary」；把 boundary 值代進去，用中文念一次。",
+    "空 container 是必測 boundary：loop 不跑，但你在 loop 前若先讀了 `v[0]` 就會出錯。"
+  ],
+  "steps": [],
+  "cards": []
 }

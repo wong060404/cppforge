@@ -14,9 +14,9 @@
     "index-vs-value"
   ],
   "objectives": [
-    "分辨 std::array（編譯期固定大小）與 std::vector（可增長）",
-    "用 size() 而不是手寫長度，並且不越界",
-    "實作就地反轉，並理解為什麼「每輪都交換」會讓陣列變回原樣"
+    "分辨 std::array（compile time 固定大小）與 std::vector（可增長）",
+    "用 size() 而不是手寫長度，並且不 out of bounds",
+    "實作就地反轉，並理解為什麼「每輪都交換」會讓 array 變回原樣"
   ],
   "graders": [
     "compile",
@@ -49,36 +49,37 @@
         "5",
         "20",
         "8",
-        "編譯錯誤"
+        "compile error"
       ],
       "answer": "5",
-      "explain": "`sizeof(std::array<int,5>)` 是 20（5×4），除以 `sizeof(int)`=4 得到 5 —— 這次剛好對。但這是為了 C 陣列寫的技巧，`std::array` 有 `size()` 就該用 `size()`，意圖更清楚也不會在換型別時算錯。"
+      "explain": "`sizeof(std::array<int,5>)` 是 20（5×4），除以 `sizeof(int)`=4 得到 5 —— 這次剛好對。但這是為了 C array 寫的技巧，`std::array` 有 `size()` 就該用 `size()`，意圖更清楚也不會在換 type 時算錯。"
     },
     {
       "kind": "choice",
-      "prompt": "反轉 `{1,2,3,4,5}` 的迴圈如果要走訪「全部」索引，結果會是什麼？",
+      "prompt": "反轉 `{1,2,3,4,5}` 的 loop 如果要走訪「全部」 index，結果會是什麼？",
       "choices": [
         "完全反轉",
         "不變",
         "只剩前半",
-        "越界崩潰"
+        "out of bounds 崩潰"
       ],
       "answer": "不變",
-      "explain": "走訪全部 5 個索引並和對稱位置交換，等於每個配對換了兩次 → 回到原樣。只需走訪前一半：`i < n/2`。"
+      "explain": "走訪全部 5 個 index 並和對稱位置交換，等於每個配對換了兩次 → 回到原樣。只需走訪前一半：`i < n/2`。"
     }
   ],
   "cards": [
     {
       "q": "什麼時候用 `std::array`，什麼時候用 `std::vector`？",
-      "a": "**大小在編譯期就知道且不變** → `std::array<T,N>`：不配置堆積記憶體、大小是型別的一部分、可 `constexpr`。**大小要執行期才知道或會變** → `std::vector<T>`。兩者都有 `size()`、`operator[]`、迭代器與範圍 for。"
+      "a": "**大小在 compile time 就知道且不變**→ `std::array<T,N>`：不 allocate heap 記憶體、大小是 type 的一部分、可 `constexpr`。**大小要 runtime 才知道或會變**→ `std::vector<T>`。兩者都有 `size()`、`operator[]`、iterator 與範圍 for。"
     },
     {
-      "q": "為什麼「走訪全部索引做對稱交換」不會反轉陣列？",
+      "q": "為什麼「走訪全部 index 做對稱交換」不會反轉 array？",
       "a": "因為每個配對被交換了兩次（例如 i=0 與 i=4 換一次，i=4 與 i=0 又換一次），兩次等於沒換。正確寫法是只走前半：`for (i = 0; i < n/2; ++i) swap(a[i], a[n-1-i])`。"
     }
   ],
   "hints": [
-    "`std::array` 的大小在編譯期固定；`size()` 回傳的是 `size_t`。",
-    "反轉時若走訪「全部」索引做對稱交換，每一對會換兩次 = 沒換；只需走訪前一半。"
-  ]
+    "`std::array` 的大小在 compile time 固定；`size()` return 的是 `size_t`。",
+    "反轉時若走訪「全部」 index 做對稱交換，每一對會換兩次 = 沒換；只需走訪前一半。"
+  ],
+  "steps": []
 }

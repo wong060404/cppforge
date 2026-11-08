@@ -81,4 +81,4 @@ std::optional<std::size_t> find_first_above(const std::vector<int>& v, int thres
 std::optional<std::pair<int, int>> min_max(const std::vector<int>& v);
 ```
 
-起始碼用了哨兵值 `0`（對 `find_first_above` 更是完全錯的：0 是合法的索引！），`min_max` 遇到空 vector 會回傳 `{0, 0}`。測試會把這兩件事抓出來。
+起始碼用了哨兵值 `0`（對 `find_first_above` 更是完全錯的：0 是合法的 index！），`min_max` 遇到空 vector 會 return `{0, 0}`。測試會把這兩件事抓出來。

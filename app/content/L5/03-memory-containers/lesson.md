@@ -71,7 +71,7 @@ std::vector<int> evens(const std::vector<int>& v);   // 保持順序；必須 re
 void sort_in_place(std::vector<int>& v);             // 由小到大，就地
 ```
 
-起始碼三個地方不合格：`squares` 沒有 `reserve`、`evens` 的條件寫成奇數、
+起始碼三個地方不合格：`squares` 沒有 `reserve`、`evens` 的 condition 寫成奇數、
 `sort_in_place` 排成由大到小。
 
 > 本節的靜態規則會檢查：有沒有用 `reserve`（必須）、有沒有用 `std::list`（禁止）、

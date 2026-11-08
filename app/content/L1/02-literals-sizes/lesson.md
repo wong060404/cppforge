@@ -88,5 +88,5 @@ bool fits_in_short(long long v);      // v 是否落在 short 的範圍
 unsigned char low_byte(unsigned v);   // v 的最低 8 位（0..255）
 ```
 
-起始碼三個地方漏了：`int_bits` 回了位元組數、`fits_in_short` 手寫的極值差一位、
-`low_byte` 用位移取錯方向。
+起始碼三個地方漏了：`int_bits` 回了 byte 數、`fits_in_short` 手寫的極值差一位、
+`low_byte` 用 shift 取錯方向。

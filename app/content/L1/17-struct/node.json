@@ -14,9 +14,9 @@
     "boundary-condition"
   ],
   "objectives": [
-    "用 struct 取代「一長串同型別參數」，讓介面自己說明語意",
-    "知道聚合初始化（`{x, y}`）與成員存取的寫法",
-    "在 struct 參數上用 const& 避免複製，並處理退化輸入（反向矩形）"
+    "用 struct 取代「一長串同 type parameter」，讓 interface 自己說明語意",
+    "知道聚合 initialization（`{x, y}`）與 member 存取的寫法",
+    "在 struct parameter 上用 const& 避免複製，並處理退化輸入（反向矩形）"
   ],
   "graders": [
     "compile",
@@ -46,16 +46,16 @@
       "prompt": "`int distance(int x1, int y1, int x2, int y2)` 最大的問題是什麼？",
       "choices": [
         "效能不好",
-        "呼叫時參數順序容易搞錯，而且看不出語意",
+        "呼叫時 parameter 順序容易搞錯，而且看不出語意",
         "不能用 const",
-        "不能回傳 int"
+        "不能 return int"
       ],
-      "answer": "呼叫時參數順序容易搞錯，而且看不出語意",
-      "explain": "`distance(a.x, a.y, b.x, b.y)` 一旦寫成 `distance(a.x, b.x, a.y, b.y)` 編譯器完全不會發現。改成 `distance(Point a, Point b)` 就從根源消除這個錯誤。"
+      "answer": "呼叫時 parameter 順序容易搞錯，而且看不出語意",
+      "explain": "`distance(a.x, a.y, b.x, b.y)` 一旦寫成 `distance(a.x, b.x, a.y, b.y)` compiler 完全不會發現。改成 `distance(Point a, Point b)` 就從根源消除這個錯誤。"
     },
     {
       "kind": "choice",
-      "prompt": "`rect_contains` 要包含邊界，比較運算子該用哪一個？",
+      "prompt": "`rect_contains` 要包含 boundary，comparison operator 子該用哪一個？",
       "choices": [
         "<",
         "<=",
@@ -63,21 +63,22 @@
         ">="
       ],
       "answer": "<=",
-      "explain": "「包含邊界」意味著點剛好落在邊上也算在內，所以四個判斷都要用 `<=` / `>=`。用嚴格小於會讓邊界上的點被排除 —— 這是起始碼的錯誤之一。"
+      "explain": "「包含 boundary」意味著點剛好落在邊上也算在內，所以四個判斷都要用 `<=` / `>=`。用嚴格小於會讓 boundary 上的點被排除 —— 這是起始碼的錯誤之一。"
     }
   ],
   "cards": [
     {
-      "q": "什麼時候該把參數包成 struct？",
-      "a": "當**同一組資料總是一起出現、且順序有意義**時。例如 `(x1,y1,x2,y2)` 四個 int 很容易傳錯順序，而 `Point`/`Rect` 讓型別系統幫你檢查。經驗法則：函式有 4 個以上同型別參數，通常就該拆出 struct。"
+      "q": "什麼時候該把 parameter 包成 struct？",
+      "a": "當**同一組資料總是一起出現、且順序有意義**時。例如 `(x1,y1,x2,y2)` 四個 int 很容易傳錯順序，而 `Point`/`Rect` 讓 type 系統幫你檢查。經驗法則：function 有 4 個以上同 type parameter，通常就該拆出 struct。"
     },
     {
-      "q": "為什麼函式參數用 `const Rect&` 而不是 `Rect`？",
-      "a": "`Rect` 傳值會複製（現在只有兩個 `Point`，成本很小；但結構長大後就不是了）。更重要的是 `const&` 表達「我只讀不改」，而且能接受 const 物件。**小型且便宜的型別（int、指標）傳值更清楚**，所以不是一律加 `&`。"
+      "q": "為什麼 function parameter 用 `const Rect&` 而不是 `Rect`？",
+      "a": "`Rect` pass by value 會複製（現在只有兩個 `Point`，成本很小；但結構長大後就不是了）。更重要的是 `const&` 表達「我只讀不改」，而且能接受 const object。**小型且便宜的 type（int、pointer） pass by value 更清楚**，所以不是一律加 `&`。"
     }
   ],
   "hints": [
-    "同一型別的多個參數很容易傳錯順序 —— 用 struct 把資料綁在一起就不會搞混。",
-    "矩形若左上右下顛倒，寬或高會是負數；介面要求你處理這個退化情況。"
-  ]
+    "同一 type 的多個 parameter 很容易傳錯順序 —— 用 struct 把資料綁在一起就不會搞混。",
+    "矩形若左上右下顛倒，寬或高會是負數；interface 要求你處理這個退化情況。"
+  ],
+  "steps": []
 }

@@ -15,8 +15,8 @@
   ],
   "objectives": [
     "知道用 0 或 -1 當「找不到」的哨兵值為什麼危險",
-    "用 std::optional 表達「可能沒有值」，並正確處理空容器",
-    "用 std::pair 回傳兩個相關結果"
+    "用 std::optional 表達「可能沒有值」，並正確處理空 container",
+    "用 std::pair return 兩個相關結果"
   ],
   "graders": [
     "compile",
@@ -46,16 +46,16 @@
       "prompt": "`find_first(...)` 用 `-1` 表示「找不到」，最大的問題是什麼？",
       "choices": [
         "效能比較差",
-        "型別是 int，而索引是無號的 size_t，-1 會變成巨大正數",
-        "編譯器不允許",
+        "type 是 int，而 index 是 unsigned 的 size_t，-1 會變成巨大正數",
+        "compiler 不允許",
         "無法比較"
       ],
-      "answer": "型別是 int，而索引是無號的 size_t，-1 會變成巨大正數",
-      "explain": "`std::size_t` 沒有負數。把 -1 轉成 size_t 會得到 18446744073709551615，呼叫端若沒檢查就會直接越界。這正是 std::optional<std::size_t> 存在的理由。"
+      "answer": "type 是 int，而 index 是 unsigned 的 size_t，-1 會變成巨大正數",
+      "explain": "`std::size_t` 沒有負數。把 -1 轉成 size_t 會得到 18446744073709551615，呼叫端若沒檢查就會直接 out of bounds。這正是 std::optional<std::size_t> 存在的理由。"
     },
     {
       "kind": "choice",
-      "prompt": "要表達「這裡可能沒有值」，C++17 之後應該回傳什麼型別？",
+      "prompt": "要表達「這裡可能沒有值」，C++17 之後應該 return 什麼 type？",
       "choices": [
         "int",
         "std::optional",
@@ -63,11 +63,13 @@
         "void*"
       ],
       "answer": "std::optional",
-      "explain": "`std::optional<T>` 把「有沒有值」編進型別裡：呼叫端必須先檢查，不會像哨兵值那樣被默默忽略。"
+      "explain": "`std::optional<T>` 把「有沒有值」編進 type 裡：呼叫端必須先檢查，不會像哨兵值那樣被默默忽略。"
     }
   ],
   "hints": [
-    "「找不到」不要用魔法值（例如 -1）表示，用 `std::optional` 回傳 `nullopt`。",
-    "回傳 `optional` 時，呼叫端要先 `has_value()`；直接 `.value()` 在空的時候會丟例外。"
-  ]
+    "「找不到」不要用魔法值（例如 -1）表示，用 `std::optional` return `nullopt`。",
+    "return `optional` 時，呼叫端要先 `has_value()`；直接 `.value()` 在空的時候會丟 exception。"
+  ],
+  "steps": [],
+  "cards": []
 }

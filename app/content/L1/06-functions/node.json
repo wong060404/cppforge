@@ -15,10 +15,10 @@
     "scope"
   ],
   "objectives": [
-    "寫出「宣告／定義／呼叫」三個角色，並知道宣告要放在標頭檔",
-    "知道傳值（copy）與傳參考（同一份）的差別",
-    "用參考參數回傳多個結果，並知道呼叫端要傳什麼",
-    "知道區域變數在函式結束時消失（不能回傳它的參考）"
+    "寫出「declaration ／ definition ／呼叫」三個角色，並知道 declaration 要放在 header file",
+    "知道 pass by value（copy）與 pass by reference（同一份）的差別",
+    "用 reference parameter return 多個結果，並知道呼叫端要傳什麼",
+    "知道 local variable 在 function 結束時消失（不能 return 它的 reference）"
   ],
   "graders": [
     "compile",
@@ -30,53 +30,53 @@
     "tasks.hpp"
   ],
   "steps": [
-    "`divmod` 的兩個結果要「寫進參考參數」，不是寫進區域變數",
-    "`repeat` 的 `times` 參數要被用到 —— 你回傳了幾次？",
-    "`scale_in_place` 要用 `&` 迭代：`for (int& x : v)` 才能改到原容器"
+    "`divmod` 的兩個結果要「寫進 reference parameter」，不是寫進 local variable",
+    "`repeat` 的 `times` parameter 要被用到 —— 你 return 了幾次？",
+    "`scale_in_place` 要用 `&` iteration：`for (int& x : v)` 才能改到原 container"
   ],
   "hints": [
-    "int q = a / b; 只是建立一個新的區域變數，函式結束就消失。要影響呼叫者，必須寫 quotient = a / b;（quotient 是參考參數）。順便檢查商與餘數有沒有寫反。",
-    "`repeat(\"ab\", 3)` 應該回傳 `\"ababab\"`。用一個迴圈把 `s` 累加到結果字串裡；`times <= 0` 要回傳空字串。",
-    "\for (int x : v) 的 x 是元素的**副本**；而且要改到 vector 就得寫 \for (int& x : v) { x *= factor; }。你目前只是把算出來的結果丟掉。"
+    "int q = a / b; 只是建立一個新的 local variable，function 結束就消失。要影響呼叫者，必須寫 quotient = a / b;（quotient 是 reference parameter）。順便檢查商與餘數有沒有寫反。",
+    "`repeat(\"ab\", 3)` 應該 return `\"ababab\"`。用一個 loop 把 `s` 累加到結果 string 裡；`times <= 0` 要 return empty string。",
+    "or (int x : v) 的 x 是 element 的**副本**；而且要改到 vector 就得寫 \for (int& x : v) { x *= factor; }。你目前只是把算出來的結果丟掉。"
   ],
   "drills": [
     {
       "kind": "choice",
-      "prompt": "`void f(int x) { x = 99; }` 之後呼叫端傳入的變數會變成 99 嗎？",
+      "prompt": "`void f(int x) { x = 99; }` 之後呼叫端傳入的 variable 會變成 99 嗎？",
       "choices": [
         "會",
         "不會，因為 x 是副本",
-        "要看編譯器",
-        "編譯錯誤"
+        "要看 compiler",
+        "compile error"
       ],
       "answer": "不會，因為 x 是副本",
-      "explain": "傳值（`int x`）會複製一份。函式改的是副本，呼叫端的變數不受影響。要改到呼叫者必須用參考：`void f(int& x)`。"
+      "explain": "pass by value（`int x`）會複製一份。function 改的是副本，呼叫端的 variable 不受影響。要改到呼叫者必須用 reference：`void f(int& x)`。"
     },
     {
       "kind": "choice",
-      "prompt": "`for (int x : v) { x *= 2; }` 會把 vector 的每個元素變成兩倍嗎？",
+      "prompt": "`for (int x : v) { x *= 2; }` 會把 vector 的每個 element 變成兩倍嗎？",
       "choices": [
         "會",
-        "不會，因為 x 是元素的副本",
-        "只有第一個元素會變",
-        "編譯錯誤"
+        "不會，因為 x 是 element 的副本",
+        "只有第一個 element 會變",
+        "compile error"
       ],
-      "answer": "不會，因為 x 是元素的副本",
-      "explain": "range-for 預設是傳值。要就地修改必須寫 `for (int& x : v)`。若只是讀取，寫 `for (const int& x : v)` 可以避免複製。"
+      "answer": "不會，因為 x 是 element 的副本",
+      "explain": "range-for 預設是 pass by value。要就地修改必須寫 `for (int& x : v)`。若只是讀取，寫 `for (const int& x : v)` 可以避免複製。"
     }
   ],
   "cards": [
     {
-      "q": "「宣告」與「定義」差在哪？為什麼函式宣告要放在標頭檔？",
-      "a": "宣告只說「有這個函式、參數與回傳值是什麼」；定義才給出實作本體。編譯器需要宣告才能檢查呼叫是否正確，連結器需要定義才能產生執行檔。放在標頭檔是為了讓**所有**用到它的檔案都看得到同一份宣告，避免各自寫一份而不一致。"
+      "q": "「declaration」與「definition」差在哪？為什麼 function declaration 要放在 header file？",
+      "a": "declaration 只說「有這個 function、parameter 與 return value 是什麼」；definition 才給出實作本體。compiler 需要 declaration 才能檢查呼叫是否正確，linker 需要 definition 才能產生執行檔。放在 header file 是為了讓**所有**用到它的檔案都看得到同一份 declaration，避免各自寫一份而不一致。"
     },
     {
-      "q": "什麼時候用傳值、什麼時候用傳參考？",
-      "a": "**要改到呼叫者** → 傳參考（`T&`）。**只是讀、而且物件很大** → 傳 const 參考（`const T&`），避免複製。**只是讀、而且物件很小（int、double、指標）** → 直接傳值最簡單。判斷依據是「這個參數的生命週期與所有權」，不是「效能感覺」。"
+      "q": "什麼時候用 pass by value、什麼時候用 pass by reference？",
+      "a": "**要改到呼叫者**→ pass by reference（`T&`）。**只是讀、而且 object 很大**→ 傳 const reference（`const T&`），避免複製。**只是讀、而且 object 很小（int、double、pointer）**→ 直接 pass by value 最簡單。判斷依據是「這個 parameter 的 lifetime 與 ownership」，不是「效能感覺」。"
     },
     {
-      "q": "為什麼「回傳區域變數的參考」是嚴重錯誤？",
-      "a": "區域變數在函式結束時就被銷毀，回傳它的參考等於回傳一個指向已釋放記憶體的懸空參考。呼叫端拿到的是「看起來正常、實際已失效」的東西 —— 這是典型的未定義行為，可能讀到垃圾值或直接崩潰。回傳值（copy）或回傳 `std::string`/`std::vector` 這類有值語意的型別就沒問題。"
+      "q": "為什麼「return local variable 的 reference」是嚴重錯誤？",
+      "a": "local variable 在 function 結束時就被銷毀，return 它的 reference 等於 return 一個指向已 deallocate 記憶體的懸空 reference。呼叫端拿到的是「看起來正常、實際已失效」的東西 —— 這是典型的 undefined behavior，可能讀到垃圾值或直接崩潰。return value（copy）或 return `std::string`/`std::vector` 這類有值語意的 type 就沒問題。"
     }
   ]
 }

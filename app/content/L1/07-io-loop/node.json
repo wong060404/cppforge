@@ -14,9 +14,9 @@
     "accumulator"
   ],
   "objectives": [
-    "用 std::cin >> 讀取一串以空白分隔的整數",
+    "用 std::cin >> 讀取一串以空白分隔的 integer",
     "知道 >> 會自動跳過空白，也知道它遇到格式錯誤會「卡住」",
-    "寫出同時維護 sum / count / max 三個狀態的迴圈"
+    "寫出同時維護 sum / count / max 三個狀態的 loop"
   ],
   "graders": [
     "compile",
@@ -62,27 +62,29 @@
       "choices": [
         "讀到 0，並繼續正常運作",
         "進入 fail 狀態，之後所有 >> 都失敗",
-        "拋出例外",
+        "throw exception",
         "跳過 abc 讀下一個"
       ],
       "answer": "進入 fail 狀態，之後所有 >> 都失敗",
-      "explain": "這是 C++ I/O 最常見的靜默失敗：轉換失敗會設定 failbit，之後每次 >> 都立刻失敗且不改動變數。要恢復得呼叫 `std::cin.clear()` 並清掉緩衝區。"
+      "explain": "這是 C++ I/O 最常見的靜默失敗：轉換失敗會設定 failbit，之後每次 >> 都立刻失敗且不改動 variable。要恢復得呼叫 `std::cin.clear()` 並清掉緩衝區。"
     },
     {
       "kind": "choice",
-      "prompt": "要找最大值，`max` 變數應該初始化成什麼最安全？",
+      "prompt": "要找最大值，`max` variable 應該 initialization 成什麼最安全？",
       "choices": [
         "0",
-        "第一個元素",
+        "第一個 element",
         "INT_MAX",
         "-1"
       ],
-      "answer": "第一個元素",
-      "explain": "初始化成 0 在「全部是負數」的資料上會錯（最大值永遠不回 0）。用第一個元素當種子，或初始化成 `std::numeric_limits<int>::min()`。"
+      "answer": "第一個 element",
+      "explain": "initialization 成 0 在「全部是負數」的資料上會錯（最大值永遠不回 0）。用第一個 element 當種子，或 initialization 成 `std::numeric_limits<int>::min()`。"
     }
   ],
   "hints": [
-    "先讀 `n`，再讀 `n` 個整數。最大值建議用「第一個讀到的值」初始化，不要用 `0`（全負數會錯）。",
+    "先讀 `n`，再讀 `n` 個 integer。最大值建議用「第一個讀到的值」 initialization，不要用 `0`（全負數會錯）。",
     "輸出格式是 `sum=<總和> count=<n> max=<最大值>`，一個空白都不能多。"
-  ]
+  ],
+  "steps": [],
+  "cards": []
 }

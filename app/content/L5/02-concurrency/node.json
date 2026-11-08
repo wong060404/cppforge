@@ -15,9 +15,9 @@
     "chunking"
   ],
   "objectives": [
-    "用 `std::thread` + `join` 把工作切給多個執行緒",
+    "用 `std::thread` + `join` 把工作切給多個 thread",
     "知道「切段」時最容易漏掉餘數（n % k）與空區段（k > n）",
-    "知道共享可變狀態必須用 `std::atomic`（否則資料競爭是 UB）",
+    "知道共享可變狀態必須用 `std::atomic`（否則 data race 是 UB）",
     "知道`thread` 解構前必須 join 或 detach，否則 `std::terminate`"
   ],
   "graders": [
@@ -63,37 +63,38 @@
         "什麼都不做"
       ],
       "answer": "呼叫 std::terminate",
-      "explain": "`std::thread` 的解構函式檢查 joinable（是否已被 join 或 detach）；若是就 `std::terminate`。這是刻意的：程式設計者必須明確決定「等它」還是「放生它」，不能默默二選一。"
+      "explain": "`std::thread` 的 destructor 檢查 joinable（是否已被 join 或 detach）；若是就 `std::terminate`。這是刻意的：程式設計者必須明確決定「等它」還是「放生它」，不能默默二選一。"
     },
     {
       "kind": "choice",
-      "prompt": "兩個執行緒同時對同一個 `int` 做 `++`，這是什麼？",
+      "prompt": "兩個 thread 同時對同一個 `int` 做 `++`，這是什麼？",
       "choices": [
         "效能問題",
-        "資料競爭（data race），是未定義行為",
-        "編譯錯誤",
+        "data race，是 undefined behavior",
+        "compile error",
         "只會少算一次"
       ],
-      "answer": "資料競爭（data race），是未定義行為",
-      "explain": "`++x` 不是原子操作（讀-改-寫三步），兩個執行緒交錯會掉更新。更嚴重的是：標準規定資料競爭是 **UB**，所以不能只說「會少算幾次」—— 編譯器可以任意優化。解法是 `std::atomic<int>` 或加鎖。"
+      "answer": "data race，是 undefined behavior",
+      "explain": "`++x` 不是 atomic operation（讀-改-寫三步），兩個 thread 交錯會掉更新。更嚴重的是：標準規定 data race 是**UB**，所以不能只說「會少算幾次」 —— compiler 可以任意 optimization。解法是 `std::atomic<int>` 或加鎖。"
     }
   ],
   "cards": [
     {
-      "q": "把 n 個元素分給 k 個執行緒時，最容易漏掉什麼？",
-      "a": "**餘數**。`n / k` 整除時剛好，但 `n % k != 0` 時最後那幾個元素沒有歸屬。正確做法是 `chunk = n / k`，前 `n % k` 個執行緒各多分一個。另一個邊界是 `k > n`：此時會有空區段（甚至除以零），要把實際執行緒數夾到 `min(k, n)`。"
+      "q": "把 n 個 element 分給 k 個 thread 時，最容易漏掉什麼？",
+      "a": "**餘數**。`n / k` 整除時剛好，但 `n % k != 0` 時最後那幾個 element 沒有歸屬。正確做法是 `chunk = n / k`，前 `n % k` 個 thread 各多分一個。另一個 boundary 是 `k > n`：此時會有空區段（甚至除以零），要把實際 thread 數夾到 `min(k, n)`。"
     },
     {
       "q": "為什麼共享計數器一定要用 `std::atomic`？",
-      "a": "`++counter` 是「讀 → 加 → 寫」三步，兩個執行緒交錯時會遺失更新。而且標準規定**資料競爭是未定義行為**（不只是「可能少算」）。`std::atomic<std::size_t>` 保證 `fetch_add` 是原子的，且預設使用最嚴格的記憶體順序（seq_cst）。"
+      "a": "`++counter` 是「讀 → 加 → 寫」三步，兩個 thread 交錯時會遺失更新。而且標準規定**data race 是 undefined behavior**（不只是「可能少算」）。`std::atomic<std::size_t>` 保證 `fetch_add` 是 atomic 的，且預設使用最嚴格的記憶體順序（seq_cst）。"
     },
     {
-      "q": "多執行緒的程式要怎麼測試才可靠？",
-      "a": "讓**結果與排程無關**：每個執行緒寫自己的位置、最後再合併（這樣就沒有共享可寫狀態）。這叫「分而治之 + 合併」。測試只斷言最終結果等於序列版本，而不是斷言執行順序。若真的需要共享，就用 atomic 或鎖，並另用工具（TSan）檢查 —— 我們這個環境沒有 TSan，所以更依賴「設計上避免共享」。"
+      "q": "多 thread 的程式要怎麼測試才可靠？",
+      "a": "讓**結果與排程無關**：每個 thread 寫自己的位置、最後再合併（這樣就沒有共享可寫狀態）。這叫「分而治之 + 合併」。測試只 assertion 最終結果等於序列版本，而不是 assertion 執行順序。若真的需要共享，就用 atomic 或鎖，並另用工具（TSan）檢查 —— 我們這個環境沒有 TSan，所以更依賴「設計上避免共享」。"
     }
   ],
   "hints": [
-    "分段時 `n % k` 的餘數要分給前幾個執行緒；`k > n` 時要把執行緒數夾到 n。",
-    "共享計數器一定要 `std::atomic`；更好的做法是每個執行緒先算自己的部分，最後再合併。"
-  ]
+    "分段時 `n % k` 的餘數要分給前幾個 thread；`k > n` 時要把 thread 數夾到 n。",
+    "共享計數器一定要 `std::atomic`；更好的做法是每個 thread 先算自己的部分，最後再合併。"
+  ],
+  "steps": []
 }

@@ -93,4 +93,4 @@ std::size_t remove_all(std::vector<int>& v, int value);      // 就地移除所�
 std::vector<int> intersect_sorted(const std::vector<int>& a, const std::vector<int>& b);
 ```
 
-起始碼三個地方漏了：`unique_sorted` 忘了 erase、`remove_all` 的謂詞寫反、`intersect_sorted` 只取了 a 的元素而沒有真的取交集。
+起始碼三個地方漏了：`unique_sorted` 忘了 erase、`remove_all` 的謂詞寫反、`intersect_sorted` 只取了 a 的 element 而沒有真的取交集。

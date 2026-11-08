@@ -34,12 +34,12 @@ int square(int x) { return x * x; }   // 定義：真的給出實作
 ## 你要做的事
 
 - `geometry.cpp`（支援檔案）已經由「隊友」寫好，提供 `rect_area` 與 `rect_perimeter`。
-- `tasks.hpp` 宣告了三個函式，其中 `square_area` **沒有任何人實作**。
+- `tasks.hpp` declaration 了三個 function，其中 `square_area` **沒有任何人實作**。
 - 你的起始碼只有一行 `#include "tasks.hpp"`。
 
-按執行之後你會看到：**編譯通過，連結失敗**。這就是本節要你親眼看到的現象。
+按執行之後你會看到：** compile 通過，link 失敗**。這就是本節要你親眼看到的現象。
 
-修法只有一個：在 `submission.cpp` 裡提供 `square_area` 的定義，而且簽章必須與 `tasks.hpp` 一字不差。
+修法只有一個：在 `submission.cpp` 裡提供 `square_area` 的 definition，而且簽章必須與 `tasks.hpp` 一字不差。
 
 > 為什麼不直接給你一個「有 bug 的實作」？
-> 因為這個節點要學的不是「怎麼算面積」，而是「連結器到底在等什麼」。先看懂錯誤，再談實作。
+> 因為這個節點要學的不是「怎麼算面積」，而是「linker 到底在等什麼」。先看懂錯誤，再談實作。

@@ -62,4 +62,4 @@ int max_or_zero(const std::vector<int>& v);
 std::size_t count_above(const std::vector<int>& v, int threshold);
 ```
 
-起始碼三個都有問題：`safe_at` 沒檢查邊界、`max_or_zero` 用 0 當種子、`count_above` 把「嚴格大於」寫成了「大於等於」。
+起始碼三個都有問題：`safe_at` 沒檢查 boundary、`max_or_zero` 用 0 當種子、`count_above` 把「嚴格大於」寫成了「大於等於」。

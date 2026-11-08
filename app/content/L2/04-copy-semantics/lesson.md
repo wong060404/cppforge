@@ -85,5 +85,5 @@ int at(std::size_t i) const;                  // 越界丟 out_of_range
 std::size_t size() const;
 ```
 
-起始碼：複製建構子「配置了但沒複製內容」、複製賦值「覆蓋指標前沒釋放舊資料」。
-第二個錯不會讓任何測試失敗 —— 只有洩漏檢查抓得到。
+起始碼：copy constructor「allocate 了但沒複製內容」、copy assignment「覆蓋 pointer 前沒 deallocate 舊資料」。
+第二個錯不會讓任何測試失敗—— 只有 leak check 抓得到。

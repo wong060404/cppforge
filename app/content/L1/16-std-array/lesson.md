@@ -60,4 +60,4 @@ void reverse_array(std::array<int, 5>& a);
 std::size_t index_of_max(const std::array<int, 5>& a);   // 回傳索引，不是值
 ```
 
-起始碼：一個迴圈多跑一格（會被除錯模式抓到）、一個反轉寫成全走訪、一個把「最大值」和「最大值的索引」搞混了。
+起始碼：一個 loop 多跑一格（會被 debugging 模式抓到）、一個反轉寫成全走訪、一個把「最大值」和「最大值的 index」搞混了。

@@ -16,10 +16,10 @@
     "flat-index"
   ],
   "objectives": [
-    "用 `&` 取位址、用 `*` 取值，並知道兩者互為反運算",
-    "知道 `p + 1` 是「往下一個元素」而不是「下一個位元組」",
-    "知道 C 陣列傳給函式時會 decay 成指標，長度資訊會消失",
-    "理解多維陣列在記憶體中是連續的（row-major），並能算出扁平索引"
+    "用 `&` 取 address、用 `*` 取值，並知道兩者互為反運算",
+    "知道 `p + 1` 是「往下一個 element」而不是「下一個 byte」",
+    "知道 C array 傳給 function 時會 decay 成 pointer，長度資訊會消失",
+    "理解 multidimensional array 在記憶體中是連續的（row-major），並能算出扁平 index"
   ],
   "graders": [
     "compile",
@@ -31,14 +31,14 @@
     "tasks.hpp"
   ],
   "steps": [
-    "`next` 要回「下一個 int 的位址」—— 指標加 1 就是一個元素，不要自己加 `sizeof`",
+    "`next` 要回「下一個 int 的 address」 —— pointer 加 1 就是一個 element，不要自己加 `sizeof`",
     "`find_value` 找不到時要回 `nullptr`，不是回 `begin`",
     "`flat_index` 是 row-major：列的權重是 `cols`，欄的權重是 1"
   ],
   "hints": [
-    "指標算術的單位是「元素」。`p + 1` 前進 `sizeof(int)` 個位元組，`p + sizeof(int)` 會前進 4 個元素 —— 這是本節最常見的錯。",
-    "`find_value` 的介面說「找不到回 nullptr」。回 `begin` 會讓呼叫端誤以為找到了（而且指向第一個元素）。",
-    "`flat_index(row, col, cols)`：位址是 `row * cols + col`。反過來寫 `col * cols + row` 在方陣上剛好一樣，所以要用非方陣測（例如 2×3）。"
+    "pointer arithmetic 的單位是「element」。`p + 1` 前進 `sizeof(int)` 個 byte，`p + sizeof(int)` 會前進 4 個 element —— 這是本節最常見的錯。",
+    "`find_value` 的 interface 說「找不到回 nullptr」。回 `begin` 會讓呼叫端誤以為找到了（而且指向第一個 element）。",
+    "`flat_index(row, col, cols)`：address 是 `row * cols + col`。反過來寫 `col * cols + row` 在方陣上剛好一樣，所以要用非方陣測（例如 2×3）。"
   ],
   "drills": [
     {
@@ -46,28 +46,28 @@
       "prompt": "`int a[5];` 之後 `a + 2` 是什麼？",
       "choices": [
         "a[2] 的值",
-        "指向 a[2] 的指標",
-        "a 的位址加 2 個位元組",
-        "編譯錯誤"
+        "指向 a[2] 的 pointer",
+        "a 的 address 加 2 個 byte",
+        "compile error"
       ],
-      "answer": "指向 a[2] 的指標",
-      "explain": "陣列名稱會 decay 成「指向第一個元素的指標」，所以 `a + 2` 是 `&a[2]`。要拿值必須解參考：`*(a + 2)`，而這正好等於 `a[2]`。"
+      "answer": "指向 a[2] 的 pointer",
+      "explain": "array 名稱會 decay 成「指向第一個 element 的 pointer」，所以 `a + 2` 是 `&a[2]`。要拿值必須 dereference：`*(a + 2)`，而這正好等於 `a[2]`。"
     },
     {
       "kind": "choice",
-      "prompt": "`void f(int v[5])` 的參數實際上是什麼型別？",
+      "prompt": "`void f(int v[5])` 的 parameter 實際上是什麼 type？",
       "choices": [
-        "int 陣列（長度 5）",
-        "int*（指標）",
-        "int[5] 的參考",
-        "編譯錯誤"
+        "int array（長度 5）",
+        "int*（pointer）",
+        "int[5] 的 reference",
+        "compile error"
       ],
-      "answer": "int*（指標）",
-      "explain": "陣列不能按值傳遞，會 decay 成指標 —— 長度資訊消失。要保留長度必須傳參考：`void f(int (&v)[5])`，或用 `std::array`/`std::vector`。"
+      "answer": "int*（pointer）",
+      "explain": "array 不能按值傳遞，會 decay 成 pointer —— 長度資訊消失。要保留長度必須 pass by reference：`void f(int (&v)[5])`，或用 `std::array`/`std::vector`。"
     },
     {
       "kind": "choice",
-      "prompt": "某二維陣列 `int m[2][3]` 佔多少位元組？",
+      "prompt": "某二維 array `int m[2][3]` 佔多少 byte？",
       "choices": [
         "2",
         "3",
@@ -75,21 +75,21 @@
         "2 × sizeof(int)"
       ],
       "answer": "6 × sizeof(int)",
-      "explain": "多維陣列在記憶體中是**連續**的：2×3 = 6 個 int。索引 `m[i][j]` 對應扁平位置 `i * 3 + j`（row-major），這就是 C 的記憶體順序。"
+      "explain": "multidimensional array 在記憶體中是**連續**的：2×3 = 6 個 int。index `m[i][j]` 對應扁平位置 `i * 3 + j`（row-major），這就是 C 的記憶體順序。"
     }
   ],
   "cards": [
     {
       "q": "`&` 與 `*` 分別做什麼？`*(&x)` 等於什麼？",
-      "a": "`&x` 取 x 的位址（得到指標）；`*p` 取 p 指向的值（解參考）。兩者互為反運算，所以 `*(&x) == x`。反過來 `&*p == p` 也成立。這是理解指標最基本的等式。"
+      "a": "`&x` 取 x 的 address（得到 pointer）；`*p` 取 p 指向的值（dereference）。兩者互為反運算，所以 `*(&x) == x`。反過來 `&*p == p` 也成立。這是理解 pointer 最基本的等式。"
     },
     {
-      "q": "為什麼指標加 1 不是加 1 個位元組？",
-      "a": "指標算術的單位是**元素型別的大小**。`int* p; p + 1` 會前進 `sizeof(int)` 個位元組，因為這樣才能指到「下一個 int」。這也是為什麼 `v[i]` 就等於 `*(v + i)`。"
+      "q": "為什麼 pointer 加 1 不是加 1 個 byte？",
+      "a": "pointer arithmetic 的單位是**element type 的大小**。`int* p; p + 1` 會前進 `sizeof(int)` 個 byte，因為這樣才能指到「下一個 int」。這也是為什麼 `v[i]` 就等於 `*(v + i)`。"
     },
     {
-      "q": "C 陣列 decay 成指標會失去什麼？會造成什麼問題？",
-      "a": "失去**長度**。`void f(int v[5])` 實際上是 `int*`，函式內 `sizeof(v)` 是指標大小（8），不是陣列大小（20）。所以必須額外傳長度，或改用 `std::array`/`std::vector`，或傳陣列參考 `int (&v)[5]` 讓長度成為型別的一部分。"
+      "q": "C array decay 成 pointer 會失去什麼？會造成什麼問題？",
+      "a": "失去**長度**。`void f(int v[5])` 實際上是 `int*`，function 內 `sizeof(v)` 是 pointer 大小（8），不是 array 大小（20）。所以必須額外傳長度，或改用 `std::array`/`std::vector`，或傳 array reference `int (&v)[5]` 讓長度成為 type 的一部分。"
     }
   ]
 }

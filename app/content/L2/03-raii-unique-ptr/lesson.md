@@ -68,4 +68,4 @@ std::size_t size() const;
 bool empty() const;                          // 沒有元素（含被移走後）為 true
 ```
 
-起始碼：`size()` 多算一個、`empty()` 判斷相反、移動建構子忘了把來源歸零。
+起始碼：`size()` 多算一個、`empty()` 判斷相反、move constructor 忘了把來源歸零。

@@ -87,5 +87,5 @@ std::string repeat(const std::string& s, int times);       // times <= 0 → ""
 void scale_in_place(std::vector<int>& v, int factor);      // 就地乘 factor
 ```
 
-起始碼三個地方漏了：`divmod` 把結果寫進區域變數、`repeat` 完全沒用 `times`、
+起始碼三個地方漏了：`divmod` 把結果寫進 local variable、`repeat` 完全沒用 `times`、
 `scale_in_place` 用 `for (int x : v)`（改到副本）。

@@ -83,5 +83,5 @@ std::string above_average_line(const std::vector<int>& samples);
 //   否則 → "above=<一位小數>%"
 ```
 
-起始碼三個地方沒讀懂：`summary_line` 直接 `.value()`（空輸入會丟例外）、
-`mean` 用一位小數（契約是兩位）、`above_average_line` 自己重算了全體平均。
+起始碼三個地方沒讀懂：`summary_line` 直接 `.value()`（空輸入會丟 exception）、
+`mean` 用一位小數（contract 是兩位）、`above_average_line` 自己重算了全體平均。

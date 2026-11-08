@@ -12,7 +12,7 @@
   ],
   "objectives": [
     "說出從 .cpp 到 .exe 必經的四個階段，以及每個階段會產生什麼錯誤",
-    "分辨「編譯錯誤」與「連結錯誤」的訊息長相",
+    "分辨「compile error」與「link error」的訊息長相",
     "知道為什麼 main 的簽章是 int main() 而不是 void main()"
   ],
   "graders": [
@@ -47,55 +47,56 @@
       "kind": "choice",
       "prompt": "程式碼把 `std::cout << x` 的 `x` 拼錯成 `y`，你會在哪個階段被攔下來？",
       "choices": [
-        "前置處理",
-        "編譯（語意分析）",
+        "preprocessing",
+        "compile（語意分析）",
         "組譯",
-        "連結"
+        "link"
       ],
-      "answer": "編譯（語意分析）",
-      "explain": "名稱解析屬於編譯階段。前置處理只做 `#include`、`#define` 的文字替換，它不知道 `y` 存不存在。"
+      "answer": "compile（語意分析）",
+      "explain": "名稱解析屬於 compile 階段。preprocessing 只做 `#include`、`#define` 的文字替換，它不知道 `y` 存不存在。"
     },
     {
       "kind": "choice",
-      "prompt": "你宣告了 `void helper();` 卻忘了寫它的定義，錯誤會出現在哪個階段？",
+      "prompt": "你 declaration 了 `void helper();` 卻忘了寫它的 definition，錯誤會出現在哪個階段？",
       "choices": [
-        "編譯",
-        "連結",
-        "執行期",
+        "compile",
+        "link",
+        "runtime",
         "不會有錯"
       ],
-      "answer": "連結",
-      "explain": "編譯階段只檢查「宣告是否合法」；到了連結階段才需要真正的函式位址，找不到就報 `undefined reference to 'helper()'`。"
+      "answer": "link",
+      "explain": "compile 階段只檢查「declaration 是否合法」；到了 link 階段才需要真正的 function address，找不到就報 `undefined reference to 'helper()'`。"
     },
     {
       "kind": "choice",
-      "prompt": "編譯器說 `expected ';' before '}'`。你第一個要檢查的地方是？",
+      "prompt": "compiler 說 `expected ';' before '}'`。你第一個要檢查的地方是？",
       "choices": [
         "訊息指的那一行",
         "上一行",
         "整個檔案的第一行",
-        "標頭檔"
+        "header file"
       ],
       "answer": "上一行",
-      "explain": "GCC 的 `expected X before Y` 幾乎都是「Y 之前少了 X」。指標位置常常指向 Y，也就是問題的下一個 token。"
+      "explain": "GCC 的 `expected X before Y` 幾乎都是「Y 之前少了 X」。pointer 位置常常指向 Y，也就是問題的下一個 token。"
     }
   ],
   "cards": [
     {
       "q": "從 `.cpp` 到 `.exe` 必經哪四個階段？",
-      "a": "① **前置處理**（展開 `#include`/`#define`）→ ② **編譯**（語法與型別檢查，產生組合語言）→ ③ **組譯**（產生目的檔 `.o`）→ ④ **連結**（把多個 `.o` 與函式庫接起來）。錯誤發生在哪一階段，決定了你該怎麼修。"
+      "a": "①**preprocessing**（展開 `#include`/`#define`）→ ②**compile**（語法與 type 檢查，產生組合語言）→ ③**組譯**（產生目的檔 `.o`）→ ④**link**（把多個 `.o` 與 function 庫接起來）。錯誤發生在哪一階段，決定了你該怎麼修。"
     },
     {
       "q": "看到 `undefined reference to 'foo()'`，第一個要懷疑的是漏了 `#include` 嗎？",
-      "a": "**不是**。那已經是連結階段，代表編譯成功了 —— 缺的是**定義**（實作），不是宣告。常見原因：忘了把 `.cpp` 加進編譯指令、簽章不一致、或根本沒寫定義。漏 `#include` 會在更早的編譯階段報 `was not declared in this scope`。"
+      "a": "**不是**。那已經是 link 階段，代表 compile 成功了 —— 缺的是**definition**（實作），不是 declaration。常見原因：忘了把 `.cpp` 加進 compile 指令、簽章不一致、或根本沒寫 definition。漏 `#include` 會在更早的 compile 階段報 `was not declared in this scope`。"
     },
     {
       "q": "`void main()` 為什麼不該用？",
-      "a": "C++ 標準規定 `main` 回傳 `int`。某些舊編譯器「能過」只是它懶得檢查，換到 Linux 的 g++ 就會被拒絕。這是本課程反覆強調的一句話：**能編譯 ≠ 合法**。"
+      "a": "C++ 標準規定 `main` return `int`。某些舊 compiler「能過」只是它懶得檢查，換到 Linux 的 g++ 就會被拒絕。這是本課程反覆強調的一句話：**能 compile ≠ 合法**。"
     }
   ],
   "hints": [
     "輸出必須逐字相符：`hello, world`（逗號後一個空白、驚嘆號），結尾要有換行。",
-    "按「執行」後看評測裡的「預期」與「得到」兩段文字，通常只差一個字元。"
-  ]
+    "按「執行」後看評測裡的「預期」與「得到」兩段文字，通常只差一個 character。"
+  ],
+  "steps": []
 }

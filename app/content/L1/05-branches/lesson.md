@@ -79,5 +79,5 @@ int clamp(int x, int lo, int hi);        // 夾到 [lo, hi]；若 lo > hi 先交
 bool is_leap(int year);                  // 閏年判斷（含世紀規則）
 ```
 
-起始碼三個地方漏了：`grade` 的邊界用 `>`（90 會掉到 B）、`clamp` 沒處理 `lo > hi`、
+起始碼三個地方漏了：`grade` 的 boundary 用 `>`（90 會掉到 B）、`clamp` 沒處理 `lo > hi`、
 `is_leap` 只檢查了「4 的倍數」。

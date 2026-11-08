@@ -15,10 +15,10 @@
     "exceptions"
   ],
   "objectives": [
-    "用 private 成員讓外部無法直接破壞物件狀態",
-    "說出這個 class 的不變式（invariant），並在每個成員函式裡維持它",
-    "在 const 成員函式裡讀取狀態（const-correctness）",
-    "用例外拒絕不合法的參數，而不是默默接受"
+    "用 private member 讓外部無法直接破壞 object 狀態",
+    "說出這個 class 的 invariant，並在每個 member function 裡維持它",
+    "在 const member function 裡讀取狀態（const-correctness）",
+    "用 exception 拒絕不合法的 parameter，而不是默默接受"
   ],
   "graders": [
     "compile",
@@ -46,7 +46,7 @@
   "drills": [
     {
       "kind": "choice",
-      "prompt": "`Counter` 的不變式（任何時候都必須成立的條件）是什麼？",
+      "prompt": "`Counter` 的 invariant（任何時候都必須成立的 condition）是什麼？",
       "choices": [
         "0 <= value <= max",
         "value >= 0",
@@ -54,33 +54,34 @@
         "value != max"
       ],
       "answer": "0 <= value <= max",
-      "explain": "不變式就是「任何時候都必須成立的事」。這裡是 `0 <= value_ <= max_` —— 每個成員函式結束時都必須維持它。起始碼的 `increment()` 和 `add()` 都破壞了它。"
+      "explain": "invariant 就是「任何時候都必須成立的事」。這裡是 `0 <= value_ <= max_` —— 每個 member function 結束時都必須維持它。起始碼的 `increment()` 和 `add()` 都破壞了它。"
     },
     {
       "kind": "choice",
       "prompt": "為什麼 `int value() const;` 的 `const` 不能省略？",
       "choices": [
         "為了效能",
-        "讓 const 物件也能呼叫，並保證不修改物件",
-        "編譯器會自動加",
+        "讓 const object 也能呼叫，並保證不修改 object",
+        "compiler 會自動加",
         "只是風格"
       ],
-      "answer": "讓 const 物件也能呼叫，並保證不修改物件",
-      "explain": "沒有 `const` 的成員函式不能對 const 物件呼叫（會被編譯器拒絕）。而且它也是契約：呼叫者知道這個函式不會改動狀態。"
+      "answer": "讓 const object 也能呼叫，並保證不修改 object",
+      "explain": "沒有 `const` 的 member function 不能對 const object 呼叫（會被 compiler 拒絕）。而且它也是 contract：呼叫者知道這個 function 不會改動狀態。"
     }
   ],
   "cards": [
     {
-      "q": "什麼是 class 的「不變式」（invariant）？",
-      "a": "指物件在**任何可觀察的時刻**都必須成立的條件。例如計數器的 `0 <= value_ <= max_`。每個 public 成員函式都必須負責維持它：進入時它成立，離開時它也必須成立。這是封裝的真正目的 —— 不是「把成員藏起來」，而是「讓不合法的狀態不可能存在」。"
+      "q": "什麼是 class 的「invariant」（invariant）？",
+      "a": "指 object 在**任何可觀察的時刻**都必須成立的 condition。例如計數器的 `0 <= value_ <= max_`。每個 public member function 都必須負責維持它：進入時它成立，離開時它也必須成立。這是 encapsulation 的真正目的 —— 不是「把 member 藏起來」，而是「讓不合法的狀態不可能存在」。"
     },
     {
-      "q": "為什麼成員函式要標 `const`？",
-      "a": "兩個原因：① **可用性** —— 沒有 const 的成員函式不能對 const 物件（或 const 參考）呼叫；② **契約** —— 標了 const 就是承諾「我只讀不改」，編譯器會幫你檢查。原則是：**不會修改成員的成員函式一律標 const**。"
+      "q": "為什麼 member function 要標 `const`？",
+      "a": "兩個原因：①**可用性** —— 沒有 const 的 member function 不能對 const object（或 const reference）呼叫；②**contract** —— 標了 const 就是承諾「我只讀不改」，compiler 會幫你檢查。原則是：**不會修改 member 的 member function 一律標 const**。"
     }
   ],
   "hints": [
-    "不變式是 `0 <= value_ <= max_`：建構子要驗證、`increment` 要夾住、`add` 要拒絕負數。",
+    "invariant 是 `0 <= value_ <= max_`：constructor 要驗證、`increment` 要夾住、`add` 要拒絕負數。",
     "「滿了」是合法狀態（夾住即可），「負增量」是錯誤（丟 `std::invalid_argument`）。"
-  ]
+  ],
+  "steps": []
 }

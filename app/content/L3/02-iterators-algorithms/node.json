@@ -16,9 +16,9 @@
   ],
   "objectives": [
     "用 `begin()` / `end()` 表達「範圍」，並知道它是半開區間",
-    "用 `std::count_if` + lambda 取代手寫計數迴圈",
-    "用 `std::max_element` 並處理空容器（回傳 `end()`）",
-    "知道演算法不會改變容器大小 —— 改變大小要靠成員函式"
+    "用 `std::count_if` + lambda 取代手寫計數 loop",
+    "用 `std::max_element` 並處理空 container（return `end()`）",
+    "知道 algorithm 不會改變 container 大小 —— 改變大小要靠 member function"
   ],
   "graders": [
     "compile",
@@ -46,45 +46,46 @@
   "drills": [
     {
       "kind": "choice",
-      "prompt": "`std::sort(v.begin(), v.end())` 的 `end()` 指向哪個元素？",
+      "prompt": "`std::sort(v.begin(), v.end())` 的 `end()` 指向哪個 element？",
       "choices": [
-        "最後一個元素",
-        "最後一個元素的後一格（不存在）",
-        "第一個元素",
+        "最後一個 element",
+        "最後一個 element 的後一格（不存在）",
+        "第一個 element",
         "中間"
       ],
-      "answer": "最後一個元素的後一格（不存在）",
-      "explain": "`end()` 是「尾後迭代器」，不能解參考。半開區間 `[begin, end)` 的好處是空區間就是 `begin == end`，而且 `end - begin == size()`。"
+      "answer": "最後一個 element 的後一格（不存在）",
+      "explain": "`end()` 是「尾後 iterator」，不能 dereference。半開區間 `[begin, end)` 的好處是空區間就是 `begin == end`，而且 `end - begin == size()`。"
     },
     {
       "kind": "choice",
       "prompt": "`std::remove_if(v.begin(), v.end(), pred)` 會讓 `v.size()` 變小嗎？",
       "choices": [
         "會",
-        "不會 —— 它只是把要保留的元素往前搬，要配 erase 才真的刪除",
-        "看編譯器",
+        "不會 —— 它只是把要保留的 element 往前搬，要配 erase 才真的刪除",
+        "看 compiler",
         "只有在 vector 上會"
       ],
-      "answer": "不會 —— 它只是把要保留的元素往前搬，要配 erase 才真的刪除",
-      "explain": "演算法只操作「迭代器範圍」，不知道容器的存在，所以不可能改變大小。這就是 erase-remove idiom：`v.erase(std::remove_if(...), v.end());`。"
+      "answer": "不會 —— 它只是把要保留的 element 往前搬，要配 erase 才真的刪除",
+      "explain": "algorithm 只操作「iterator 範圍」，不知道 container 的存在，所以不可能改變大小。這就是 erase-remove idiom：`v.erase(std::remove_if(...), v.end());`。"
     }
   ],
   "cards": [
     {
-      "q": "為什麼 `std::sort` 不能改變容器大小？",
-      "a": "因為演算法只拿到兩個迭代器（`begin`/`end`），**不知道容器的存在**，所以只能重排既有元素。任何改變大小的操作（`push_back`、`erase`、`resize`）都必須是容器的成員函式。這也解釋了為什麼 `std::remove` 不會刪除元素 —— 它只是把要保留的往前搬，回傳新的邏輯結尾。"
+      "q": "為什麼 `std::sort` 不能改變 container 大小？",
+      "a": "因為 algorithm 只拿到兩個 iterator（`begin`/`end`），**不知道 container 的存在**，所以只能重排既有 element。任何改變大小的操作（`push_back`、`erase`、`resize`）都必須是 container 的 member function。這也解釋了為什麼 `std::remove` 不會刪除 element —— 它只是把要保留的往前搬，return 新的邏輯結尾。"
     },
     {
       "q": "什麼是 erase-remove idiom？",
-      "a": "`v.erase(std::remove(v.begin(), v.end(), value), v.end());`。`std::remove` 把不等於 value 的元素往前搬，回傳新的邏輯結尾；`erase` 才真正把尾端那些「殘留的值」刪掉。C++20 起可直接用 `std::erase(v, value)`。"
+      "a": "`v.erase(std::remove(v.begin(), v.end(), value), v.end());`。`std::remove` 把不等於 value 的 element 往前搬，return 新的邏輯結尾；`erase` 才真正把尾端那些「殘留的值」刪掉。C++20 起可直接用 `std::erase(v, value)`。"
     },
     {
-      "q": "`std::max_element` 對空容器回傳什麼？",
-      "a": "回傳 `end()`。所以不能直接解參考 —— 必須先檢查 `it != v.end()`。這與 `std::count_if`（空容器回 0）不同：回傳迭代器的演算法在空範圍上都沒有「有效值」。"
+      "q": "`std::max_element` 對空 container return 什麼？",
+      "a": "return `end()`。所以不能直接 dereference —— 必須先檢查 `it != v.end()`。這與 `std::count_if`（空 container 回 0）不同：return iterator 的 algorithm 在空範圍上都沒有「有效值」。"
     }
   ],
   "hints": [
-    "`std::count_if` 的謂詞是「要計數的條件」；`any_of` 是「存在」、`all_of` 是「全部」。",
-    "`std::max_element` 回傳迭代器，空容器時等於 `end()`，直接解參考會出事。"
-  ]
+    "`std::count_if` 的謂詞是「要計數的 condition」；`any_of` 是「存在」、`all_of` 是「全部」。",
+    "`std::max_element` return iterator，空 container 時等於 `end()`，直接 dereference 會出事。"
+  ],
+  "steps": []
 }

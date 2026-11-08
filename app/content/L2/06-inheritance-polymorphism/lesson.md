@@ -76,7 +76,7 @@ std::unique_ptr<Shape> make_shape(const std::string& kind, double a, double b);
 //   "circle" → Circle(a)；"rect" → Rect(a, b)；其他 → nullptr
 ```
 
-起始碼三個地方漏了：`Circle::area()` 用 3.14 當圓周率（精度不足）、`Rect::name()` 回傳 `"Rectangle"`（規格是 `"rect"`）、`make_shape()` 不管 `kind` 一律回傳圓形。
+起始碼三個地方漏了：`Circle::area()` 用 3.14 當圓周率（precision 不足）、`Rect::name()` return `"Rectangle"`（規格是 `"rect"`）、`make_shape()` 不管 `kind` 一律 return 圓形。
 
-> `total_area()` 在起始碼裡是**對的** —— 它示範了「多型在集合上就是這樣用」，
+> `total_area()` 在起始碼裡是**對的**—— 它示範了「polymorphism 在集合上就是這樣用」，
 > 也是本節最重要的那一行：`sum += s->area();` 會自動分派到正確的實作。
