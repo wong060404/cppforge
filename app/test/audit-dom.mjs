@@ -14,6 +14,13 @@
  *
  * 沒有前置條件：所有節點都自由存取，任何一節都能直接開、直接執行。
  * 這個測試自己會驗這件事（先開最後一節、而且不經過任何前面的節點）。
+ *
+ * ⚠ 這個測試會**寫入真實資料**：它會按「還原」（清掉該節草稿）、
+ *   在編輯器裡打測試字串（變成伺服器草稿）、並送一次評測。
+ *   要跑在乾淨環境請另開一個暫存資料庫：
+ *
+ *     $env:CPPFORGE_DB = "$env:TEMP\cppforge-audit.db"
+ *     node app/server/index.mjs
  */
 import { createRequire } from "node:module";
 import process from "node:process";

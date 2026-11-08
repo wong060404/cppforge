@@ -5,6 +5,13 @@
  * UI 冒煙驗的是「DOM 邏輯對不對」，但**兩者都不會發現**
  * 「某個端點在壞輸入下回 500」「某個資源 404」「路徑穿越沒擋」這類問題。
  *
+ * ⚠ 這個測試會**寫入真實資料**：它會送幾次評測（空程式碼、語法錯誤），
+ *   那些都會記進 attempts，複習卡的到期時間也會被動到。
+ *   要跑在乾淨環境請用暫存資料庫：
+ *
+ *     $env:CPPFORGE_DB = "$env:TEMP\cppforge-audit.db"
+ *     node app/server/index.mjs
+ *
  * 用法：
  *   node app/server/index.mjs          # 另開一個終端
  *   node app/test/audit-api.mjs        # 預設打 http://127.0.0.1:4173

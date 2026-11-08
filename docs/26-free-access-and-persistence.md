@@ -107,9 +107,32 @@ Copy-Item .data\cppforge.db "$env:USERPROFILE\Desktop\cppforge-backup.db"
 
 ---
 
-## 5. 這一輪刻意沒有做的事
+## 5. 注意：兩支審計測試會寫入真實資料
+
+`app/test/audit-api.mjs` 與 `app/test/audit-dom.mjs` 都是「真的打 API」，
+所以它們會**改到你的資料**：
+
+| 測試 | 會做什麼 | 影響 |
+|---|---|---|
+| `audit-api.mjs` | 送幾次評測（空程式碼、語法錯誤） | `attempts` 增加、複習卡排程被動到 |
+| `audit-dom.mjs` | 按「還原」、在編輯器打測試字串、送一次評測 | 該節草稿被清空／覆蓋、增加一次失敗紀錄 |
+
+**想在不碰真實進度的情況下跑**，用一個暫存資料庫：
+
+```powershell
+$env:CPPFORGE_DB = "$env:TEMP\cppforge-audit.db"
+node app/server/index.mjs          # 這個實例用的是乾淨的暫存 DB
+node app/test/audit-api.mjs
+```
+
+`verify-content.mjs`、`srs.test.mjs`、`atlas.test.mjs` 不會動資料（前者的評測走暫存目錄）。
+
+---
+
+## 6. 這一輪刻意沒有做的事
 
 - **沒有**保留「鎖」的開關（例如 `CPPFORGE_LOCK=1`）。如果你之後想要「老師模式」的強制順序，
   那是另一個功能，不是把鎖加回來就好：還要處理「已解鎖但被你跳過的節點」怎麼顯示。
-- **沒有**把先修關係從內容裡拿掉 —— 它是排序與教學設計的依據，只是不再當门槛。
+- **沒有**把先修關係從內容裡拿掉 —— 它是排序與教學設計的依據，只是不再當門檻。
 - **沒有**改複習的排程權重；只是換了「哪些節點會建卡」。
+- **沒有**做「匯出／匯入進度」的 UI。目前備份就是複製那個 `.db` 檔（見 §4）。
