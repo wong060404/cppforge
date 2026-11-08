@@ -1,0 +1,35 @@
+# 工具鏈與暫存（不進版控）
+tools/
+cache/
+*.7z.exe
+poc/.work*/
+poc/reports/*.stdout.txt
+poc/reports/*.stderr.txt
+
+# 第三方前端套件（Monaco 編輯器，約 27 MB 的建置產物）
+# 需要時用 `npm install` 重新取得 —— 見 README「編輯器（可選）」
+app/.vendor/
+node_modules/
+
+# 執行期產物
+*.db
+*.db-wal
+*.db-shm
+*.exe
+*.o
+*.obj
+build/
+runs/
+
+# 編輯器 / 系統雜項
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.vscode/
+.idea/
+
+# 暫存腳本（開發時的驗證用，不進版控）
+tmp-*.mjs
+tmp-*.cjs
+tmp-*.ps1

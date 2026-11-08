@@ -1,0 +1,91 @@
+{
+  "id": "L4.01",
+  "order": 1,
+  "level": 4,
+  "title": "例外安全：解構函式在錯誤路徑上也會跑",
+  "minutes": 45,
+  "prerequisites": [
+    "L3.04"
+  ],
+  "concepts": [
+    "exception-safety",
+    "raii-guard",
+    "stack-unwinding",
+    "noexcept",
+    "scoped-guard"
+  ],
+  "objectives": [
+    "解釋 stack unwinding，並說明為什麼「把清理寫在解構函式」比「寫在每個 return 前面」可靠",
+    "實作一個 scope guard（解構時執行清理動作）",
+    "知道解構函式為什麼預設是 `noexcept`，以及從解構函式拋出例外的後果",
+    "分辨三種例外安全保證：不洩漏（basic）、失敗時原狀不變（strong）、不拋（nothrow）"
+  ],
+  "graders": [
+    "compile",
+    "unit_test",
+    "runtime_safety"
+  ],
+  "minTests": 9,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "從解構函式拋出例外（且沒被捕捉）會怎樣？",
+      "choices": [
+        "正常往外傳",
+        "呼叫 std::terminate，程式直接結束",
+        "被忽略",
+        "編譯錯誤"
+      ],
+      "answer": "呼叫 std::terminate，程式直接結束",
+      "explain": "解構函式隱含 noexcept。若例外真的逃出去，標準規定呼叫 `std::terminate`。理由：如果解構函式中拋例外，且此時已經有另一個例外在傳播，就會同時有兩個例外 —— 程式無法決定要處理哪一個。所以清理程式碼絕對不可以拋例外。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "「strong guarantee（強保證）」是什麼意思？",
+      "choices": [
+        "保證不洩漏記憶體",
+        "操作失敗時，物件維持在操作前的狀態（要嘛全成功，要嘛完全沒變）",
+        "保證不拋例外",
+        "保證效能不變差"
+      ],
+      "answer": "操作失敗時，物件維持在操作前的狀態（要嘛全成功，要嘛完全沒變）",
+      "explain": "三種保證：**nothrow**（絕不拋）、**strong**（失敗則回滾到原狀）、**basic**（不洩漏，但物件可能在合法但不確定的狀態）。`std::vector::push_back` 提供 strong（用 copy-and-swap 或兩段式配置）。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "什麼是 stack unwinding？為什麼它讓 RAII 變得可靠？",
+      "a": "例外離開 scope 時，編譯器保證依**反向順序**呼叫所有已完成建構的區域物件解構函式。所以把清理寫在解構函式裡，就不需要「在每個 return / 每個錯誤分支前面各寫一次」—— 那正是最容易漏的地方。"
+    },
+    {
+      "q": "為什麼解構函式預設是 `noexcept`？",
+      "a": "因為解構函式會在 stack unwinding 期間被呼叫，而那個時候通常已經有例外在傳播。若解構函式又拋出例外，就會同時有兩個例外在飛 —— 標準直接規定呼叫 `std::terminate`。所以清理動作（關檔、解鎖、釋放）都必須設計成不拋例外。"
+    },
+    {
+      "q": "什麼是 scope guard？它解決什麼問題？",
+      "a": "一個在解構時執行指定動作的小 RAII 物件。用 `ScopeGuard g([&]{ unlock(); });` 取代手寫的「每個出口都要 unlock」。它保證無論正常返回、提早 return、還是拋例外，清理都會執行一次 —— 而且可以 `release()` 取消。這是 C++ 最實用的 RAII 模式之一。"
+    }
+  ],
+  "hints": [
+    "解構函式要先檢查 `active_` 再執行 action；`release()` 之後不該再跑。",
+    "移動建構子與移動賦值都要把來源的 `active_` 設成 false，否則清理會執行兩次。"
+  ]
+}

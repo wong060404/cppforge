@@ -1,0 +1,90 @@
+{
+  "id": "L4.02",
+  "order": 2,
+  "level": 4,
+  "title": "未定義行為與靜態分析：編譯器不保證的事",
+  "minutes": 45,
+  "prerequisites": [
+    "L4.01"
+  ],
+  "concepts": [
+    "undefined-behavior",
+    "signed-overflow",
+    "narrowing-conversion",
+    "static-analysis",
+    "defensive-programming"
+  ],
+  "objectives": [
+    "說出「未定義行為」與「實作定義行為」的差別",
+    "知道有號整數溢位是 UB（無號是定義良好的回繞）",
+    "用加寬的中間型別避免溢位，而不是先算再判斷",
+    "知道 `-fanalyzer` 只能提醒，不能證明程式正確"
+  ],
+  "graders": [
+    "compile",
+    "unit_test",
+    "analyzer"
+  ],
+  "minTests": 9,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 20000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`int x = INT_MAX; x + 1;` 的行為是什麼？",
+      "choices": [
+        "變成 INT_MIN（回繞）",
+        "未定義行為，編譯器可以做任何事",
+        "拋出例外",
+        "變成 0"
+      ],
+      "answer": "未定義行為，編譯器可以做任何事",
+      "explain": "**有號**整數溢位是 UB。實務上常見「回繞到 INT_MIN」，但那只是某個編譯器在某個優化等級下的結果；編譯器也可以假設它不會發生，於是把 `x + 1 > x` 直接優化成 `true`。無號整數才保證回繞（`UINT_MAX + 1u == 0u`）。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "想算 `a` 與 `b` 的中點（兩者都可能很大），哪個寫法安全？",
+      "choices": [
+        "(a + b) / 2",
+        "a + (b - a) / 2",
+        "static_cast<int>((static_cast<long long>(a) + b) / 2)"
+      ],
+      "answer": "static_cast<int>((static_cast<long long>(a) + b) / 2)",
+      "explain": "`(a+b)/2` 一相加就溢位（UB）。`a + (b-a)/2` 對同號數還行，但 `a = INT_MIN, b = INT_MAX` 時 `b - a` 又溢位。只有**先加寬到 64 位**再運算才對所有 int 都安全。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "「未定義行為（UB）」與「實作定義行為」的差別？",
+      "a": "**UB**：標準完全不規定會發生什麼，編譯器可以假設它永不發生，於是做出違反直覺的優化（例如把 `x + 1 > x` 最佳化成 `true`）。**實作定義**：標準要求實作選一個行為並記錄（例如 `char` 是否有號、`>>` 對負數的行為）。重點差異：UB 連「事後檢查」都不可靠 —— 檢查之前程式就已經沒有意義了。"
+    },
+    {
+      "q": "為什麼 `(a + b) / 2` 求中點是錯的，而無號整數的 `+` 不是 UB？",
+      "a": "**有號**整數溢位是 UB（標準沒有定義回繞）。**無號**整數的算術被規定為模 2^N，所以 `UINT_MAX + 1u == 0u` 是定義良好的。這也是為什麼很多雜湊函式刻意用 `unsigned`：它讓溢位變成可預測的行為。"
+    },
+    {
+      "q": "`-fanalyzer` 是靜態分析器，它能不能保證程式沒有 UB？",
+      "a": "不能。它做的是**路徑分析**：在它能追蹤的路徑上找「空指標解參考、資源洩漏、有號溢位、使用未初始化值」等模式。它沒有警告不等於正確（可能有它追不到的路徑），有警告也不一定是你寫錯（可能過度保守）。它的價值是「用零成本抓到一大類常見錯誤」，不是形式化證明。"
+    }
+  ],
+  "hints": [
+    "`midpoint` 先把兩數加寬成 `long long` 再加；`(a + b) / 2` 會溢位（UB）。",
+    "`safe_at` 越界要回 `nullopt`（不是丟例外）；`clamp_byte` 要把值夾到 0..255。"
+  ]
+}

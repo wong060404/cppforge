@@ -1,0 +1,90 @@
+{
+  "id": "L3.01",
+  "order": 1,
+  "level": 3,
+  "title": "std::map：查表、迭代、以及 operator[] 的陷阱",
+  "minutes": 40,
+  "prerequisites": [
+    "L2.06"
+  ],
+  "concepts": [
+    "std-map",
+    "iterator",
+    "operator-bracket-inserts",
+    "find",
+    "sorted-iteration"
+  ],
+  "objectives": [
+    "知道 map 的迭代順序是 key 的排序，不是插入順序",
+    "分辨 `operator[]`、`at()`、`find()` 三者在「key 不存在」時的行為差異",
+    "用迭代器與結構化綁定走訪 map",
+    "知道 `insert` 對已存在的 key 不會覆蓋（這是本節的錯誤之一）"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 9,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`std::map<std::string,int> m; int n = m[\"zzz\"];` 之後 `m.size()` 是多少？",
+      "choices": [
+        "0",
+        "1",
+        "未定義",
+        "編譯錯誤"
+      ],
+      "answer": "1",
+      "explain": "`operator[]` 在 key 不存在時會**插入一個預設值 0** 並回傳它的參考。所以只是「查一下」也會讓 map 變大 —— 這是 map 最著名的陷阱。只想查就用 `find()` 或 `at()`。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`m.insert({\"a\", 9})` 但 `m` 裡已經有 `\"a\" -> 2`，結果是什麼？",
+      "choices": [
+        "變成 9",
+        "變成 11",
+        "維持 2（insert 不覆蓋）",
+        "編譯錯誤"
+      ],
+      "answer": "維持 2（insert 不覆蓋）",
+      "explain": "`insert` 只在 key 不存在時才加入。要覆蓋或累加，必須用 `m[key] = ...` 或 `m[key] += ...`。這是本節的錯誤之一：用 insert 來「計數」。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "`m[key]`、`m.at(key)`、`m.find(key)` 在 key 不存在時分別怎樣？",
+      "a": "`m[key]` **插入**一個預設值並回傳參考（map 會變大）；`m.at(key)` 丟 `std::out_of_range`；`m.find(key)` 回傳 `end()` 迭代器（不插入、不拋例外）。**只想查就用 find 或 at**，`operator[]` 是給「我要寫入/累加」用的。"
+    },
+    {
+      "q": "`std::map` 走訪時，順序是什麼決定的？",
+      "a": "由 **key 的排序**（預設 `std::less<Key>`），不是插入順序。所以 `for (const auto& [k, v] : m)` 會依 key 遞增走訪。這也是為什麼 `map` 的 `find` 是 O(log n) —— 底層是平衡二元樹。若需要插入順序，用 `std::vector` 記順序或改用別的容器。"
+    },
+    {
+      "q": "`m.count(key)` 對 `map` 回傳的是什麼？",
+      "a": "回傳 **0 或 1**（因為 map 的 key 唯一），不是「這個 key 出現幾次」。要拿值必須用 `m.at(key)` 或 `find(key)->second`。若你在統計詞頻，次數是**值**而不是 `count()`。（`std::multimap` 才會回傳真正的大於 1 的次數。）"
+    }
+  ],
+  "hints": [
+    "`m.count(k)` 只回 0 或 1；要拿次數用 `m.find(k)->second` 或 `m.at(k)`。",
+    "`m.insert({k, 1})` 對已存在的 key 不會覆蓋；要累加就用 `++m[k]`。"
+  ]
+}

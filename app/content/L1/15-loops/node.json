@@ -1,0 +1,83 @@
+{
+  "id": "L1.15",
+  "order": 15,
+  "level": 1,
+  "title": "迴圈：for、while、do-while 各管什麼",
+  "minutes": 35,
+  "prerequisites": [
+    "L1.14"
+  ],
+  "concepts": [
+    "for-loop",
+    "while-loop",
+    "loop-invariant",
+    "accumulator-identity"
+  ],
+  "objectives": [
+    "依「次數已知 / 條件成立 / 至少做一次」選對迴圈形式",
+    "知道累加的單位元素是 0、累乘是 1（起始值錯了整題必錯）",
+    "為迴圈找出不變式（invariant），用來檢查邊界"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 9,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "「至少執行一次，之後再看條件」是哪一種迴圈？",
+      "choices": [
+        "for",
+        "while",
+        "do-while",
+        "三者相同"
+      ],
+      "answer": "do-while",
+      "explain": "`do { ... } while (cond);` 先做再判斷，所以條件一開始就是 false 也會執行一次。while 與 for 都可能一次都不執行。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "累乘（product）的起始值應該是什麼？",
+      "choices": [
+        "0",
+        "1",
+        "-1",
+        "第一個元素"
+      ],
+      "answer": "1",
+      "explain": "累加是 `sum = 0`、累乘是 `product = 1`。用 0 啟動累乘，不管迴圈跑幾次結果都是 0 —— 這是本節起始碼的錯誤之一。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "累加的起始值是 0，那累乘的起始值為什麼是 1？",
+      "a": "因為它們是不同運算的**單位元素**：`x + 0 = x`，但 `x * 0 = 0`。用 0 啟動累乘，乘第一次就變成 0，之後永遠是 0。所以 `long long product = 1;`。"
+    },
+    {
+      "q": "判斷質數的迴圈為什麼可以只跑到 `sqrt(n)`？",
+      "a": "因為如果 `n = a × b` 且 `a ≤ b`，那麼 `a ≤ sqrt(n)`。也就是說「若存在因數，必有一個 ≤ sqrt(n)」——超過 sqrt(n) 還沒找到，就不可能再有。跑 `d <= n/2` 雖然正確但慢了平方根級別。"
+    }
+  ],
+  "hints": [
+    "累乘的起始值是 `1`（不是 0）；累加才是 `0`。",
+    "`do-while` 至少執行一次、`while` 可能一次都不執行 —— 這決定空輸入時的行為。"
+  ]
+}

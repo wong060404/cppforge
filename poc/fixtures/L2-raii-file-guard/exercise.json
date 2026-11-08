@@ -1,0 +1,35 @@
+{
+  "id": "L2.raii-file-guard",
+  "title": "RAII：用解構函式管理檔案資源",
+  "level": 2,
+  "prerequisites": ["L2.raii", "L1.reference", "L1.const"],
+  "concepts": ["raii", "destructor", "exception-safety", "rule-of-zero"],
+  "std": "c++20",
+  "interface": ["common/solution.hpp"],
+  "submission": {
+    "starter": "starter/solution.cpp",
+    "reference": ".meta/solution.cpp",
+    "violation": ".meta/violation.cpp"
+  },
+  "tests": "tests/tests.cpp",
+  "grader": {
+    "compileFlags": ["-Wall", "-Wextra", "-Wpedantic", "-Werror"],
+    "limits": { "timeoutMs": 5000, "memMb": 256, "procs": 4, "outCap": 65536 },
+    "staticRules": [
+      {
+        "id": "no-raw-new",
+        "pattern": "\\bnew\\b(?!\\s*\\()",
+        "message": "這個練習禁用裸 new：檔案所有權請用 RAII 表達，不要手動配置"
+      },
+      {
+        "id": "no-operator-new",
+        "pattern": "operator\\s+new",
+        "message": "不要自己替換 operator new，這個練習是在練 RAII 的邊界"
+      }
+    ],
+    "assertions": {
+      "minTests": 6,
+      "maxRunMs": 5000
+    }
+  }
+}

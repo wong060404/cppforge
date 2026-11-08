@@ -1,0 +1,77 @@
+{
+  "status": "ok",
+  "exercise": "L2.raii-file-guard",
+  "title": "RAII：用解構函式管理檔案資源",
+  "variant": "reference",
+  "passed": true,
+  "score": 1,
+  "results": [
+    {
+      "id": "compile",
+      "label": "編譯（-Wall -Wextra -Werror）",
+      "status": "pass",
+      "detail": "無警告、無錯誤",
+      "messages": [],
+      "durationMs": 693,
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "unit_test",
+      "label": "單元測試（隱藏測資）",
+      "status": "pass",
+      "detail": "7/7 測試通過（47ms）",
+      "messages": [
+        "[ ok ] 開檔 → 寫入 → 內容可讀回",
+        "[ ok ] 清除建構後 is_open() 為 true",
+        "[ ok ] 開不了檔要丟例外（不能靜默失敗）",
+        "[ ok ] 提早 return 也會關閉檔案",
+        "[ ok ] 拋例外離開 scope 也會關閉檔案",
+        "[ ok ] 禁止複製（所有權唯一）",
+        "[ ok ] 多次寫入會累積"
+      ],
+      "durationMs": 2616,
+      "blocking": true,
+      "metrics": {
+        "passed": 7,
+        "failed": 0,
+        "elapsedMs": 47,
+        "peakMemoryBytes": 5677056
+      }
+    },
+    {
+      "id": "runtime_safety",
+      "label": "記憶體安全（洩漏 + 標準庫邊界檢查）",
+      "status": "skip",
+      "detail": "無法建置檢查版本（略過）",
+      "messages": [],
+      "durationMs": 2778,
+      "blocking": false
+    },
+    {
+      "id": "static_rules",
+      "label": "靜態規則（禁用寫法）",
+      "status": "pass",
+      "detail": "符合 2 條規則",
+      "messages": [],
+      "durationMs": 1,
+      "blocking": true,
+      "violations": []
+    },
+    {
+      "id": "analyzer",
+      "label": "GCC 靜態分析（-fanalyzer，非阻塞）",
+      "status": "pass",
+      "detail": "無分析器警告",
+      "messages": [],
+      "durationMs": 828,
+      "blocking": false,
+      "diagnostics": []
+    }
+  ],
+  "diagnostics": [],
+  "hints": [],
+  "timing": {
+    "totalMs": 6955
+  }
+}

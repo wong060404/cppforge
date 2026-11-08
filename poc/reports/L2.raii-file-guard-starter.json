@@ -1,0 +1,76 @@
+{
+  "status": "ok",
+  "exercise": "L2.raii-file-guard",
+  "title": "RAII：用解構函式管理檔案資源",
+  "variant": "starter",
+  "passed": false,
+  "score": 0.5,
+  "results": [
+    {
+      "id": "compile",
+      "label": "編譯（-Wall -Wextra -Werror）",
+      "status": "pass",
+      "detail": "無警告、無錯誤",
+      "messages": [],
+      "durationMs": 622,
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "unit_test",
+      "label": "單元測試（隱藏測資）",
+      "status": "fail",
+      "detail": "1 過 / 6 敗（需 6 個測試全過）",
+      "messages": [
+        "開檔 → 寫入 → 內容可讀回 — tests.cpp:30  條件不成立: g.is_open()；tests.cpp:33  期望 slurp(kPath) == std::string(\"hello raii\") 但兩者不相等",
+        "清除建構後 is_open() 為 true — tests.cpp:38  期望 g.is_open() == true 但兩者不相等",
+        "開不了檔要丟例外（不能靜默失敗） — tests.cpp:42  FileGuard(\"/no-such-dir-xyz/a.txt\") 應該丟出 std::runtime_error，但沒有",
+        "提早 return 也會關閉檔案 — tests.cpp:51  期望 slurp(kPath) == std::string(\"early\") 但兩者不相等",
+        "拋例外離開 scope 也會關閉檔案 — tests.cpp:63  期望 slurp(kPath) == std::string(\"boom\") 但兩者不相等",
+        "多次寫入會累積 — tests.cpp:80  期望 slurp(kPath) == std::string(\"abc\") 但兩者不相等"
+      ],
+      "durationMs": 2582,
+      "blocking": true,
+      "metrics": {
+        "passed": 1,
+        "failed": 6,
+        "elapsedMs": 46,
+        "peakMemoryBytes": 5660672
+      }
+    },
+    {
+      "id": "runtime_safety",
+      "label": "記憶體安全（洩漏 + 標準庫邊界檢查）",
+      "status": "fail",
+      "detail": "測試本身有 6 項未通過，安全檢查無定論",
+      "messages": [],
+      "durationMs": 3180,
+      "blocking": true
+    },
+    {
+      "id": "static_rules",
+      "label": "靜態規則（禁用寫法）",
+      "status": "pass",
+      "detail": "符合 2 條規則",
+      "messages": [],
+      "durationMs": 1,
+      "blocking": true,
+      "violations": []
+    },
+    {
+      "id": "analyzer",
+      "label": "GCC 靜態分析（-fanalyzer，非阻塞）",
+      "status": "pass",
+      "detail": "無分析器警告",
+      "messages": [],
+      "durationMs": 565,
+      "blocking": false,
+      "diagnostics": []
+    }
+  ],
+  "diagnostics": [],
+  "hints": [],
+  "timing": {
+    "totalMs": 6988
+  }
+}

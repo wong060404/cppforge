@@ -1,0 +1,334 @@
+{
+  "probedAt": "2026-11-05T14:46:41.200Z",
+  "gxx": "<FORGE_HOME>\\w64devkit\\bin\\g++.exe",
+  "version": "g++.exe (GCC) 16.2.0",
+  "workDir": "<FORGE_HOME>\\build\\probe",
+  "stdSupport": {
+    "c++17": true,
+    "c++20": true,
+    "c++23": true,
+    "c++26": true
+  },
+  "binaries": {
+    "g++.exe": "g++.exe (GCC) 16.2.0",
+    "gcc.exe": "gcc.exe (GCC) 16.2.0",
+    "gdb.exe": "GNU gdb (GDB) 18.1",
+    "make.exe": "GNU Make 4.4.1",
+    "cmake.exe": "cmake version 4.4.4",
+    "ctest.exe": "ctest version 4.4.4",
+    "ninja.exe": "1.13.2",
+    "ccache.exe": "ccache version 4.14.1",
+    "gcov.exe": "gcov (GCC) 16.2.0",
+    "gprof.exe": "GNU gprof (GNU Binutils) 2.47.20260726",
+    "pkg-config.exe": "0.35.0",
+    "ar.exe": "GNU ar (GNU Binutils) 2.47.20260726",
+    "objdump.exe": "GNU objdump (GNU Binutils) 2.47.20260726",
+    "strip.exe": "GNU strip (GNU Binutils) 2.47.20260726",
+    "clang-tidy.exe": null
+  },
+  "results": [
+    {
+      "id": "std-cpp20-core",
+      "group": "語言標準",
+      "what": "C++20 核心：concepts / span / ranges / 三向比較",
+      "flags": [
+        "-std=c++20"
+      ],
+      "verdict": "PASS",
+      "note": "「12 4 1」",
+      "ms": 1679,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "std-format",
+      "group": "語言標準",
+      "what": "<format>：現代格式化輸出（含寬度對齊）",
+      "flags": [
+        "-std=c++20"
+      ],
+      "verdict": "PASS",
+      "note": "「  3.14|42」",
+      "ms": 1879,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "std-ranges-views",
+      "group": "語言標準",
+      "what": "<ranges> 管道組合與 lazy 求值",
+      "flags": [
+        "-std=c++23"
+      ],
+      "verdict": "PASS",
+      "note": "「1,4,9,」",
+      "ms": 2301,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "std-expected",
+      "group": "語言標準",
+      "what": "<expected>：現代錯誤處理",
+      "flags": [
+        "-std=c++23"
+      ],
+      "verdict": "PASS",
+      "note": "「10 err」",
+      "ms": 2074,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "llp64-long",
+      "group": "語言標準",
+      "what": "Windows 是 LLP64：long 只有 4 位元組（跨平台地雷）",
+      "flags": [
+        "-std=c++20"
+      ],
+      "verdict": "PASS",
+      "note": "「long=4 ptr=8」",
+      "ms": 410,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "std-thread",
+      "group": "併發",
+      "what": "std::thread / std::jthread（多執行緒課程前提）",
+      "flags": [
+        "-std=c++20",
+        "-pthread"
+      ],
+      "verdict": "PASS",
+      "note": "「1000」",
+      "ms": 1642,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "asan",
+      "group": "記憶體診斷",
+      "what": "-fsanitize=address：use-after-free",
+      "flags": [
+        "-std=c++20",
+        "-fsanitize=address",
+        "-g"
+      ],
+      "verdict": "UNSUPPORTED",
+      "note": "<FORGE_HOME>/w64devkit/bin/ld.exe: cannot find -lasan: No suc",
+      "ms": 336,
+      "compileOk": false,
+      "optional": false
+    },
+    {
+      "id": "ubsan",
+      "group": "記憶體診斷",
+      "what": "-fsanitize=undefined：有號整數溢位",
+      "flags": [
+        "-std=c++20",
+        "-fsanitize=undefined",
+        "-g"
+      ],
+      "verdict": "UNSUPPORTED",
+      "note": "<FORGE_HOME>/w64devkit/bin/ld.exe: cannot find -lubsan: No su",
+      "ms": 341,
+      "compileOk": false,
+      "optional": false
+    },
+    {
+      "id": "tsan",
+      "group": "併發",
+      "what": "-fsanitize=thread：data race",
+      "flags": [
+        "-std=c++20",
+        "-fsanitize=thread",
+        "-g",
+        "-pthread"
+      ],
+      "verdict": "UNSUPPORTED",
+      "note": "<FORGE_HOME>/w64devkit/bin/ld.exe: cannot find -ltsan: No suc",
+      "ms": 1060,
+      "compileOk": false,
+      "optional": false
+    },
+    {
+      "id": "glibcxx-debug",
+      "group": "記憶體診斷",
+      "what": "-D_GLIBCXX_DEBUG：vector 越界 / 迭代器失效",
+      "flags": [
+        "-std=c++20",
+        "-D_GLIBCXX_DEBUG",
+        "-g"
+      ],
+      "verdict": "PASS",
+      "note": "攔截 code=3 Error: attempt to subscript container with out-of-bounds index 3",
+      "ms": 1028,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "glibcxx-assert",
+      "group": "記憶體診斷",
+      "what": "-D_GLIBCXX_ASSERTIONS：可與 -O2 併用的輕量檢查",
+      "flags": [
+        "-std=c++20",
+        "-O2",
+        "-D_GLIBCXX_ASSERTIONS"
+      ],
+      "verdict": "PASS",
+      "note": "攔截 code=3",
+      "ms": 656,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "stack-protector",
+      "group": "記憶體診斷",
+      "what": "-fstack-protector-all：堆疊溢位",
+      "flags": [
+        "-std=c++20",
+        "-O2",
+        "-fstack-protector-all"
+      ],
+      "verdict": "PASS",
+      "note": "攔截 code=3221225501",
+      "ms": 752,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "leak-clean",
+      "group": "記憶體診斷",
+      "what": "自製 operator new 攔截：正常程式不誤報",
+      "flags": [
+        "-std=c++20",
+        "@HARNESS@"
+      ],
+      "verdict": "PASS",
+      "note": "code=0 LEAKCHECK: clean (0 leaked blocks)",
+      "ms": 942,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "leak-detected",
+      "group": "記憶體診斷",
+      "what": "自製 operator new 攔截：抓到忘記 delete",
+      "flags": [
+        "-std=c++20",
+        "@HARNESS@"
+      ],
+      "verdict": "PASS",
+      "note": "code=86 LEAKCHECK: 1 leaked block(s), 400 byte(s)",
+      "ms": 597,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "fanalyzer",
+      "group": "靜態分析",
+      "what": "g++ -fanalyzer：編譯期資源洩漏分析（含 CWE 編號）",
+      "flags": [
+        "-std=c++20",
+        "-fanalyzer",
+        "-Wall"
+      ],
+      "verdict": "PASS",
+      "note": "診斷含「leak」（編譯仍成功）",
+      "ms": 424,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "warnings-as-errors",
+      "group": "靜態分析",
+      "what": "-Wall -Wextra -Werror：把警告當錯",
+      "flags": [
+        "-std=c++20",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror"
+      ],
+      "verdict": "PASS",
+      "note": "如期拒絕編譯",
+      "ms": 110,
+      "compileOk": false,
+      "optional": false
+    },
+    {
+      "id": "gdb-backtrace",
+      "group": "除錯",
+      "what": "gdb -batch：從崩潰拿到可讀 backtrace",
+      "flags": [
+        "-std=c++20",
+        "-g",
+        "-O0"
+      ],
+      "verdict": "PASS",
+      "note": "#0  0x00007ff7e34f149e in divide (a=10, b=0) at <FORGE_HOME>/build/probe/probe.cpp:4",
+      "ms": 478,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "static-link",
+      "group": "交付",
+      "what": "-static：產生可攜的獨立 exe",
+      "flags": [
+        "-std=c++20",
+        "-static",
+        "-O2"
+      ],
+      "verdict": "PASS",
+      "note": "「standalone」",
+      "ms": 1433,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "perf-timing",
+      "group": "效能",
+      "what": "-O2 微基準（效能單元需要可信計時）",
+      "flags": [
+        "-std=c++20",
+        "-O2"
+      ],
+      "verdict": "PASS",
+      "note": "sum=1999999000000 ms=0.64",
+      "ms": 3254,
+      "compileOk": true,
+      "optional": false
+    },
+    {
+      "id": "lto",
+      "group": "交付",
+      "what": "-flto（w64devkit 未啟用 LTO）",
+      "flags": [
+        "-std=c++20",
+        "-O2",
+        "-flto"
+      ],
+      "verdict": "UNSUPPORTED",
+      "note": "cc1plus.exe: error: LTO support has not been enabled in this configuration",
+      "ms": 67,
+      "compileOk": false,
+      "optional": true
+    },
+    {
+      "id": "modules",
+      "group": "語言標準",
+      "what": "C++20 modules（import <iostream>）",
+      "flags": [
+        "-std=c++20",
+        "-fmodules-ts"
+      ],
+      "verdict": "UNSUPPORTED",
+      "note": "In module imported at <FORGE_HOME>\\build\\probe\\modules.cpp:1:",
+      "ms": 92,
+      "compileOk": false,
+      "optional": true
+    }
+  ]
+}

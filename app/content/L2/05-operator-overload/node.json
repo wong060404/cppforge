@@ -1,0 +1,88 @@
+{
+  "id": "L2.05",
+  "order": 5,
+  "level": 2,
+  "title": "運算子重載：讓型別講自己的語言",
+  "minutes": 40,
+  "prerequisites": [
+    "L2.04"
+  ],
+  "concepts": [
+    "operator-overloading",
+    "member-vs-free",
+    "return-reference",
+    "ostream"
+  ],
+  "objectives": [
+    "分辨「成員運算子」與「自由函式運算子」的差別，並知道 `<<` 為什麼一定要是後者",
+    "讓 `+=` 回傳 `*this` 的參考，使鏈式寫法可行",
+    "用 `operator<<` 讓型別能直接輸出（測試訊息、除錯都用得到）"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 10,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "為什麼 `operator<<` 不能寫成成員函式？",
+      "choices": [
+        "效能較差",
+        "因為左運算元是 std::ostream，不是你的類別",
+        "編譯器不支援",
+        "可以，只是不好看"
+      ],
+      "answer": "因為左運算元是 std::ostream，不是你的類別",
+      "explain": "成員運算子的左運算元一定是「自己的型別」。`a << b` 若寫成成員，就只能是 `a.operator<<(b)` —— 也就是 a 必須是 Vec2。但我們要的是 `std::cout << v`，左邊是 ostream，所以只能寫成自由函式。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`operator+=` 應該回傳什麼型別，才能寫 `(a += b) += c;`？",
+      "choices": [
+        "void",
+        "Vec2",
+        "Vec2&",
+        "const Vec2&"
+      ],
+      "answer": "Vec2&",
+      "explain": "回傳 `Vec2&`（也就是 `*this`）才能繼續對結果做運算。回傳值的話，`(a += b)` 會是暫存物件，`+= c` 只改到暫存物件就消失了。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "運算子要寫成「成員函式」還是「自由函式」？",
+      "a": "看**左運算元是誰**：`+=`、`==`、`[]`、`()` 的左邊是自己的型別 → 成員函式。`<<`、`>>`、以及「左邊是別的型別」的運算 → 自由函式（需要時宣告為 friend）。`+`、`-` 這類二元運算子通常寫成自由函式，讓左右運算元都能隱式轉換。"
+    },
+    {
+      "q": "為什麼 `operator<<` 對「測試與除錯」特別重要？",
+      "a": "因為它決定失敗訊息長什麼樣。沒有它，測試只能說「a == b 不成立」；有了它，可以印出 `Point(1,2) == Point(3,4)`。本課程的測試框架雖然還沒有自動使用 `<<`，但只要你寫了它，就能在自己的除錯輸出裡直接用 `std::cout << v`。"
+    },
+    {
+      "q": "`operator+=` 該回傳 `Vec2` 還是 `Vec2&`？",
+      "a": "`Vec2&`（回傳 `*this`）。這樣 `(a += b) += c` 才能運作，而且與內建型別的行為一致（`(i += 1) += 2` 合法）。回傳值會產生暫存物件，鏈式運算改到的是暫存物件，原本的 a 只被加了一次。"
+    }
+  ],
+  "hints": [
+    "`+=` 要把兩個軸都加，並 `return *this`（回傳參考才能鏈式 `(a += b) += c`）。",
+    "`operator<<` 的格式是介面的一部分：`(x, y)` —— 逗號後面一個空白。"
+  ]
+}

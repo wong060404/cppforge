@@ -1,0 +1,283 @@
+// CppForge 產品：HTTP 服務
+//
+// 為什麼用 node:http 而不是框架：單一使用者、無需 middleware、
+// 啟動時間 <100ms，且不引入任何 npm 依賴（除了選用的 Monaco）。
+//
+// 啟動：node app/server/index.mjs      （預設 http://127.0.0.1:4173）
+
+import { createServer } from "node:http";
+import { createReadStream } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
+import path from "node:path";
+import process from "node:process";
+import {
+  CONTENT_DIR, GXX, HOST, MONACO_DIR, PORT, WEB_DIR,
+} from "./config.mjs";
+import { allProgress, lastSubmission, progressOf, recordAttempt, reviewHistory, stats } from "./db.mjs";
+import { courseTree, lintContent, loadNode, scanNodes } from "./content.mjs";
+import { evaluateNode } from "./grading.mjs";
+import { doctorReport, installToolchain } from "./doctor.mjs";
+import { getEntry, listAtlas, setNodeIndex } from "./atlas.mjs";
+import {
+  addErrorCards, gradeCard, reviewQueue, syncContentCards,
+} from "./review.mjs";
+import { reviewCounts } from "./db.mjs";
+
+const exists = (p) => stat(p).then(() => true, () => false);
+
+const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".map": "application/json; charset=utf-8",
+};
+
+function sendJson(res, code, payload) {
+  const body = JSON.stringify(payload);
+  res.writeHead(code, {
+    "content-type": "application/json; charset=utf-8",
+    "content-length": Buffer.byteLength(body),
+    "cache-control": "no-store",
+  });
+  res.end(body);
+}
+
+function sendText(res, code, text, type = "text/plain; charset=utf-8") {
+  res.writeHead(code, { "content-type": type, "content-length": Buffer.byteLength(text) });
+  res.end(text);
+}
+
+async function serveFile(res, filePath) {
+  if (!(await exists(filePath))) return sendText(res, 404, "not found");
+  const info = await stat(filePath);
+  if (!info.isFile()) return sendText(res, 404, "not found");
+  const ext = path.extname(filePath).toLowerCase();
+  res.writeHead(200, {
+    "content-type": MIME[ext] ?? "application/octet-stream",
+    "content-length": info.size,
+    "cache-control": ext === ".map" ? "public, max-age=86400" : "no-cache",
+  });
+  createReadStream(filePath).pipe(res);
+}
+
+function readBody(req, limit = 2 * 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on("data", (c) => {
+      size += c.length;
+      if (size > limit) { reject(new Error("payload too large")); req.destroy(); return; }
+      chunks.push(c);
+    });
+    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("error", reject);
+  });
+}
+
+const decode = (s) => decodeURIComponent(s);
+
+async function handleApi(req, res, url) {
+  const parts = url.pathname.split("/").filter(Boolean); // ["api", ...]
+
+  // GET /api/health
+  if (req.method === "GET" && url.pathname === "/api/health") {
+    return sendJson(res, 200, { ok: true, gxx: GXX, version: process.version });
+  }
+
+  // GET /api/course
+  if (req.method === "GET" && url.pathname === "/api/course") {
+    const levels = await courseTree(allProgress());
+    return sendJson(res, 200, { levels, stats: stats() });
+  }
+
+  // GET /api/stats
+  if (req.method === "GET" && url.pathname === "/api/stats") {
+    return sendJson(res, 200, stats());
+  }
+
+  // GET /api/atlas          全部錯誤圖鑑條目（含 related：相關課程）
+  // GET /api/atlas/:id      單一條目
+  if (req.method === "GET" && parts[1] === "atlas") {
+    // 圖鑑 ←→ 課程 的連結靠 concepts 標籤比對，所以先注入節點索引
+    setNodeIndex(await scanNodes());
+    if (parts[2]) {
+      const entry = getEntry(decode(parts[2]));
+      if (!entry) return sendJson(res, 404, { error: "entry not found" });
+      return sendJson(res, 200, entry);
+    }
+    return sendJson(res, 200, { entries: listAtlas() });
+  }
+
+  // GET /api/review            待複習佇列（含四個按鈕的間隔預覽）
+  // GET /api/review/stats      複習統計
+  // GET /api/review/insights   複習歷史（每日次數、評分分布、未來到期預測）
+  // POST /api/review/:id       評分一張卡 { grade: 1..4 }
+  if (parts[1] === "review") {
+    if (req.method === "GET" && parts[2] === "stats") {
+      return sendJson(res, 200, reviewCounts());
+    }
+    if (req.method === "GET" && parts[2] === "insights") {
+      return sendJson(res, 200, { ...reviewCounts(), ...reviewHistory() });
+    }
+    if (req.method === "GET" && parts.length === 2) {
+      const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") ?? 20)));
+      return sendJson(res, 200, reviewQueue(limit));
+    }
+    if (req.method === "POST" && parts[2]) {
+      const body = JSON.parse((await readBody(req)) || "{}");
+      const grade = Number(body.grade);
+      if (![1, 2, 3, 4].includes(grade)) {
+        return sendJson(res, 400, { error: "BAD_GRADE", message: "grade 必須是 1..4" });
+      }
+      const result = gradeCard(Number(decode(parts[2])), grade);
+      if (!result) return sendJson(res, 404, { error: "CARD_NOT_FOUND" });
+      return sendJson(res, 200, result);
+    }
+  }
+
+  // GET /api/doctor
+  if (req.method === "GET" && url.pathname === "/api/doctor") {
+    return sendJson(res, 200, await doctorReport());
+  }
+
+  // POST /api/doctor/install
+  if (req.method === "POST" && url.pathname === "/api/doctor/install") {
+    const result = await installToolchain();
+    return sendJson(res, 200, { ...result, doctor: await doctorReport() });
+  }
+
+  // GET /api/content/lint
+  if (req.method === "GET" && url.pathname === "/api/content/lint") {
+    return sendJson(res, 200, await lintContent());
+  }
+
+  // GET /api/nodes/:id   |   POST /api/nodes/:id/run
+  if (parts[0] === "api" && parts[1] === "nodes" && parts[2]) {
+    const id = decode(parts[2]);
+    const progress = allProgress();
+
+    if (req.method === "GET" && parts.length === 3) {
+      const node = await loadNode(id, progress);
+      if (!node) return sendJson(res, 404, { error: "node not found" });
+      const last = lastSubmission(id);
+      return sendJson(res, 200, {
+        ...node,
+        lastCode: last?.code ?? null,
+        lastAt: last?.created_at ?? null,
+      });
+    }
+
+    if (req.method === "POST" && parts[3] === "run") {
+      const body = JSON.parse((await readBody(req)) || "{}");
+      const code = String(body.code ?? "");
+      if (code.length > 512 * 1024) return sendJson(res, 413, { error: "程式碼過長" });
+
+      const nodes = await scanNodes();
+      const node = nodes.find((n) => n.id === id);
+      if (!node) return sendJson(res, 404, { error: "node not found" });
+
+      // 先修未完成就不給跑：避免跳過整個學習路徑
+      const passedIds = new Set([...progress.values()].filter((p) => p.passed).map((p) => p.node_id));
+      const missing = (node.prerequisites ?? []).filter((p) => !passedIds.has(p));
+      if (missing.length > 0) {
+        return sendJson(res, 403, {
+          error: "NODE_LOCKED",
+          message: `這一節尚未解鎖，請先通過：${missing.join("、")}`,
+          blockedBy: missing,
+        });
+      }
+
+      const t0 = Date.now();
+      let report;
+      try {
+        report = await evaluateNode(node, code);
+      } catch (err) {
+        const msg = String(err.message ?? err);
+        if (msg === "TOOLCHAIN_MISSING") {
+          return sendJson(res, 503, {
+            error: "TOOLCHAIN_MISSING",
+            message: "找不到 C++ 編譯器，請先到「環境檢查」安裝工具鏈。",
+          });
+        }
+        console.error("[run] 評測失敗:", err);
+        return sendJson(res, 500, { error: "GRADING_FAILED", message: msg.slice(0, 400) });
+      }
+
+      const saved = recordAttempt({
+        nodeId: id,
+        code,
+        passed: report.passed,
+        score: report.score,
+        report,
+      });
+
+      // 失敗時把他踩到的錯誤變成複習卡（這是「錯誤卡」的來源）
+      const newCards = report.passed ? 0 : addErrorCards(report.atlas ?? []);
+
+      // 通過後可能解鎖新節點 → 補上那一節的概念卡
+      await syncContentCards();
+
+      const levels = await courseTree(allProgress());
+      return sendJson(res, 200, {
+        report,
+        saved,
+        newCards,
+        stats: stats(),
+        review: reviewCounts(),
+        levels,
+        elapsedMs: Date.now() - t0,
+      });
+    }
+  }
+
+  return sendJson(res, 404, { error: "unknown endpoint" });
+}
+
+const server = createServer(async (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host ?? "localhost"}`);
+  const pathname = url.pathname;
+
+  try {
+    if (pathname.startsWith("/api/")) return await handleApi(req, res, url);
+
+    // Monaco（選用）
+    if (pathname.startsWith("/vendor/monaco/")) {
+      const rel = pathname.slice("/vendor/monaco/".length);
+      const target = path.join(MONACO_DIR, rel);
+      if (!target.startsWith(MONACO_DIR)) return sendText(res, 403, "forbidden");
+      return await serveFile(res, target);
+    }
+
+    // 靜態 UI
+    if (pathname === "/" || pathname === "/index.html") {
+      return await serveFile(res, path.join(WEB_DIR, "index.html"));
+    }
+    const webTarget = path.join(WEB_DIR, pathname.replace(/^\/+/, ""));
+    if (!webTarget.startsWith(WEB_DIR)) return sendText(res, 403, "forbidden");
+    if (await exists(webTarget)) return await serveFile(res, webTarget);
+
+    return sendText(res, 404, "not found");
+  } catch (err) {
+    console.error("[server]", err);
+    if (!res.headersSent) sendJson(res, 500, { error: "INTERNAL", message: String(err.message ?? err) });
+    else res.end();
+  }
+});
+
+server.listen(PORT, HOST, () => {
+  console.log(`CppForge  http://${HOST}:${PORT}`);
+  console.log(`內容目錄  ${CONTENT_DIR}`);
+  console.log(`資料庫    ${process.env.CPPFORGE_HOME ?? "(預設)"}`);
+  syncContentCards()
+    .then((n) => console.log(`複習卡同步  ${n} 張概念卡`))
+    .catch((err) => console.error("[syncContentCards]", err));
+});
+
+process.on("unhandledRejection", (err) => console.error("[unhandledRejection]", err));
+process.on("uncaughtException", (err) => console.error("[uncaughtException]", err));

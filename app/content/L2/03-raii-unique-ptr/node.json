@@ -1,0 +1,85 @@
+{
+  "id": "L2.03",
+  "order": 3,
+  "level": 2,
+  "title": "RAII 與 unique_ptr：把 delete 從你的程式碼裡刪掉",
+  "minutes": 40,
+  "prerequisites": [
+    "L2.02"
+  ],
+  "concepts": [
+    "raii",
+    "unique-ptr",
+    "move-semantics",
+    "rule-of-zero"
+  ],
+  "objectives": [
+    "用 std::unique_ptr 取代手寫 new/delete，並知道為什麼不再需要解構函式",
+    "實作移動建構子，讓來源物件明確變成「空」",
+    "理解 rule of zero：成員自己會管理資源時，你什麼都不用寫"
+  ],
+  "graders": [
+    "compile",
+    "unit_test",
+    "runtime_safety"
+  ],
+  "minTests": 9,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "用 `std::unique_ptr` 當成員後，還需要自己寫解構函式嗎？",
+      "choices": [
+        "需要，還是要 delete",
+        "不需要，unique_ptr 的解構函式會處理",
+        "需要，但可以寫空的大括號",
+        "看編譯器"
+      ],
+      "answer": "不需要，unique_ptr 的解構函式會處理",
+      "explain": "成員的解構函式會自動被呼叫（反向順序），所以 `data_` 會自己釋放。這就是 rule of zero：成員會照顧自己時，你什麼都不用寫。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "物件被 `std::move` 之後，來源物件應該處於什麼狀態？",
+      "choices": [
+        "完全銷毀",
+        "有效但未指定",
+        "一定是空的",
+        "變成 nullptr"
+      ],
+      "answer": "有效但未指定",
+      "explain": "標準的說法是「valid but unspecified」—— 可以安全解構、可以重新賦值，但不能假設它還保有原來的內容。本節的設計刻意把它規範成「空」，讓行為可預測。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "什麼是 rule of zero？",
+      "a": "如果你的類別**所有成員都能自己管理資源**（`std::string`、`std::vector`、`std::unique_ptr`），那你不需要寫解構函式、複製/移動建構子、賦值運算子 —— 編譯器產生的版本全部正確。與其記 rule of three/five，不如設計成 rule of zero。"
+    },
+    {
+      "q": "`std::unique_ptr<int[]>` 與 `std::unique_ptr<int>` 差在哪？",
+      "a": "陣列版本用 `delete[]` 釋放，而且支援 `operator[]`。必須用 `std::make_unique<int[]>(n)`（會值初始化為 0）或 `std::unique_ptr<int[]>(new int[n])`（不初始化）建立。用單物件版本接陣列會導致 `delete` 而非 `delete[]` —— 未定義行為。"
+    }
+  ],
+  "hints": [
+    "`size()` 要回傳真正的元素個數；`empty()` 在 size 為 0 時才是 true。",
+    "移動建構子要把來源的 `size_` 設回 0，否則來源會「以為自己還有資料」。"
+  ]
+}

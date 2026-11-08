@@ -1,0 +1,92 @@
+{
+  "id": "L2.06",
+  "order": 6,
+  "level": 2,
+  "title": "繼承與多型：透過基底指標呼叫，為什麼會呼叫到對的版本",
+  "minutes": 45,
+  "prerequisites": [
+    "L2.05"
+  ],
+  "concepts": [
+    "inheritance",
+    "virtual",
+    "override",
+    "abstract-class",
+    "virtual-destructor",
+    "unique-ptr-polymorphism"
+  ],
+  "objectives": [
+    "說出 virtual 函式為什麼能透過基底指標呼叫到衍生類別的版本（vtable）",
+    "知道純虛擬函式的作用，以及抽象類別為什麼不能實體化",
+    "知道為什麼基底類別的解構函式必須是 virtual（否則洩漏或 UB）",
+    "用 `std::unique_ptr<Shape>` 在同一個容器裡放不同的型別"
+  ],
+  "graders": [
+    "compile",
+    "unit_test",
+    "runtime_safety"
+  ],
+  "minTests": 11,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`Base* p = new Derived; delete p;` 但 `~Base()` 不是 virtual，會怎樣？",
+      "choices": [
+        "正常呼叫 Derived 的解構函式",
+        "只呼叫 Base 的解構函式 → Derived 的資源洩漏（甚至 UB）",
+        "編譯錯誤",
+        "只會呼叫一半"
+      ],
+      "answer": "只呼叫 Base 的解構函式 → Derived 的資源洩漏（甚至 UB）",
+      "explain": "delete 透過基底指標進行時，若解構函式不是 virtual，編譯器只會靜默地呼叫 Base 的解構函式。Derived 的解構函式不會執行 → 它持有的資源洩漏。這就是「基底類別的解構函式一定要 virtual」的原因。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "把 `Derived` 物件賦值給 `Base` 型別的變數（按值），這種現象叫什麼？",
+      "choices": [
+        "向上轉型",
+        "物件切片",
+        "多型分派",
+        "虛擬繼承"
+      ],
+      "answer": "物件切片",
+      "explain": "`Base b = derived;` 只會複製 Base 那部分的成員，Derived 額外的成員與它的 virtual 行為都被切掉。所以多型一定要用參考或指標（`Base&` / `Base*`），不能用傳值。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "為什麼透過 `Shape*` 呼叫 `area()` 會執行到 `Circle::area()`？",
+      "a": "因為 `area()` 是 virtual：每個物件裡都有一個隱藏的 vptr 指向自己型別的 vtable，呼叫時是「查表」而非「直接跳到固定位址」。所以實際執行哪個版本由**物件的動態型別**決定，不由指標的靜態型別決定。"
+    },
+    {
+      "q": "為什麼基底類別的解構函式一定要 virtual？",
+      "a": "因為 `delete` 一個 `Base*` 時，編譯器要知道該不該呼叫 Derived 的解構函式。若 `~Base()` 不是 virtual，只會呼叫 `~Base()` → Derived 持有的資源永遠不會釋放（洩漏），而且這是**未定義行為**。規則：只要這個類別可能被繼承並透過基底指標刪除，解構函式就必須 virtual。"
+    },
+    {
+      "q": "什麼是物件切片？什麼情況下會發生？",
+      "a": "把衍生類別物件**按值**放進基底型別的變數或容器時，只複製基底那部分，衍生類別額外的成員與 virtual 行為都被切掉。`Base b = derived;`、`std::vector<Base> v; v.push_back(derived);` 都會發生。多型必須用 `Base&`、`Base*` 或 `std::unique_ptr<Base>`。"
+    }
+  ],
+  "hints": [
+    "`Circle::area()` 用 `std::numbers::pi`，不要用 3.14（精度會對不上）。",
+    "`Rect::name()` 要回 `rect`；`make_shape` 要依 `kind` 建立對應型別，未知則回 `nullptr`。"
+  ]
+}

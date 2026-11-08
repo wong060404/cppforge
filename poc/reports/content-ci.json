@@ -1,0 +1,33 @@
+{
+  "exercise": "L2.raii-file-guard",
+  "checks": [
+    {
+      "variant": "reference",
+      "description": "參考解必須全數通過（否則題目本身有問題）",
+      "ok": true,
+      "passed": true,
+      "detail": "compile=pass unit_test=pass runtime_safety=pass static_rules=pass analyzer=pass"
+    },
+    {
+      "variant": "starter",
+      "description": "起始碼必須「編譯過但測試失敗」（否則學員一開局就卡死）",
+      "ok": true,
+      "passed": false,
+      "detail": "compile=pass unit_test=fail runtime_safety=fail static_rules=pass analyzer=pass"
+    },
+    {
+      "variant": "violation",
+      "description": "違規碼必須被靜態規則擋下（否則評測器形同虛設）",
+      "ok": true,
+      "passed": false,
+      "detail": "compile=pass unit_test=fail runtime_safety=fail static_rules=fail analyzer=warn"
+    },
+    {
+      "variant": "violation",
+      "description": "違規碼的記憶體洩漏必須被抓到",
+      "ok": true,
+      "passed": false,
+      "detail": "compile=pass unit_test=fail runtime_safety=fail static_rules=fail analyzer=warn"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "id": "L1.10",
+  "order": 10,
+  "level": 1,
+  "title": "控制流與 off-by-one：< 還是 <=",
+  "minutes": 30,
+  "prerequisites": [
+    "L1.09"
+  ],
+  "concepts": [
+    "for-loop",
+    "off-by-one",
+    "guard-clause",
+    "string-concat"
+  ],
+  "objectives": [
+    "分辨半開區間 [from, to) 與閉區間 [from, to] 的差別，並在程式碼中貫徹",
+    "知道為什麼多數 C++ 介面用半開區間",
+    "用提前返回（guard clause）處理空區間，避免在迴圈裡塞判斷"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 7,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "迴圈 `for (int i = 0; i <= v.size(); ++i)` 在 `v.size() == 3` 時會跑幾次？",
+      "choices": [
+        "3",
+        "4",
+        "5",
+        "無限次"
+      ],
+      "answer": "4",
+      "explain": "i = 0,1,2,3 共 4 次。最後一次造訪 v[3]，越界。正確寫法是 `i < v.size()`。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "C++ 標準庫（例如 `std::sort(begin, end)`）為什麼偏好半開區間 `[begin, end)`？",
+      "choices": [
+        "效能比較好",
+        "空區間可以自然表示成 begin == end",
+        "歷史遺留，沒有理由",
+        "避免編譯器警告"
+      ],
+      "answer": "空區間可以自然表示成 begin == end",
+      "explain": "半開區間讓「空」不需要特例：`begin == end` 就是空。若用閉區間，空區間得用 `begin > end` 表示，所有迴圈都要多寫一個條件。"
+    }
+  ],
+  "hints": [
+    "`<` 與 `<=` 的差別就是「含不含邊界」；把邊界值代進去，用中文念一次。",
+    "空容器是必測邊界：迴圈不跑，但你在迴圈前若先讀了 `v[0]` 就會出錯。"
+  ]
+}

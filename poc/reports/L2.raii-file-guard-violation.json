@@ -1,0 +1,101 @@
+{
+  "status": "ok",
+  "exercise": "L2.raii-file-guard",
+  "title": "RAII：用解構函式管理檔案資源",
+  "variant": "violation",
+  "passed": false,
+  "score": 0.25,
+  "results": [
+    {
+      "id": "compile",
+      "label": "編譯（-Wall -Wextra -Werror）",
+      "status": "pass",
+      "detail": "無警告、無錯誤",
+      "messages": [],
+      "durationMs": 634,
+      "blocking": true,
+      "diagnostics": []
+    },
+    {
+      "id": "unit_test",
+      "label": "單元測試（隱藏測資）",
+      "status": "fail",
+      "detail": "3 過 / 4 敗（需 6 個測試全過）",
+      "messages": [
+        "開檔 → 寫入 → 內容可讀回 — tests.cpp:33  期望 slurp(kPath) == std::string(\"hello raii\") 但兩者不相等",
+        "提早 return 也會關閉檔案 — tests.cpp:51  期望 slurp(kPath) == std::string(\"early\") 但兩者不相等",
+        "拋例外離開 scope 也會關閉檔案 — tests.cpp:63  期望 slurp(kPath) == std::string(\"boom\") 但兩者不相等",
+        "多次寫入會累積 — tests.cpp:80  期望 slurp(kPath) == std::string(\"abc\") 但兩者不相等"
+      ],
+      "durationMs": 2454,
+      "blocking": true,
+      "metrics": {
+        "passed": 3,
+        "failed": 4,
+        "elapsedMs": 32,
+        "peakMemoryBytes": 5652480
+      }
+    },
+    {
+      "id": "runtime_safety",
+      "label": "記憶體安全（洩漏 + 標準庫邊界檢查）",
+      "status": "fail",
+      "detail": "記憶體洩漏 6 塊",
+      "messages": [],
+      "durationMs": 3304,
+      "blocking": true
+    },
+    {
+      "id": "static_rules",
+      "label": "靜態規則（禁用寫法）",
+      "status": "fail",
+      "detail": "發現 1 處違規",
+      "messages": [
+        "第 14 行 [no-raw-new] 這個練習禁用裸 new：檔案所有權請用 RAII 表達，不要手動配置"
+      ],
+      "durationMs": 0,
+      "blocking": true,
+      "violations": [
+        {
+          "rule": "no-raw-new",
+          "line": 14,
+          "message": "這個練習禁用裸 new：檔案所有權請用 RAII 表達，不要手動配置",
+          "code": "char* buf = new char[64];  // 違規"
+        }
+      ]
+    },
+    {
+      "id": "analyzer",
+      "label": "GCC 靜態分析（-fanalyzer，非阻塞）",
+      "status": "warn",
+      "detail": "發現 1 類問題：[-Wanalyzer-malloc-leak]",
+      "messages": [],
+      "durationMs": 591,
+      "blocking": false,
+      "diagnostics": [
+        {
+          "file": "submission.cpp",
+          "line": 15,
+          "column": 16,
+          "severity": "warning",
+          "message": "leak of 'buf' [CWE-401] [-Wanalyzer-malloc-leak]"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [
+    {
+      "file": "submission.cpp",
+      "line": 15,
+      "column": 16,
+      "severity": "warning",
+      "message": "leak of 'buf' [CWE-401] [-Wanalyzer-malloc-leak]"
+    }
+  ],
+  "hints": [
+    "記憶體洩漏：有 new 沒有對應的 delete。練習目標是讓 RAII 物件替你管理，不要手動 delete。"
+  ],
+  "timing": {
+    "totalMs": 7015
+  }
+}

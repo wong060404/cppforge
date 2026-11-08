@@ -1,0 +1,91 @@
+{
+  "id": "L2.04",
+  "order": 4,
+  "level": 2,
+  "title": "複製語意：深拷貝、淺拷貝與 rule of three",
+  "minutes": 45,
+  "prerequisites": [
+    "L2.03"
+  ],
+  "concepts": [
+    "copy-constructor",
+    "copy-assignment",
+    "deep-copy",
+    "rule-of-three",
+    "self-assignment"
+  ],
+  "objectives": [
+    "分辨淺拷貝（複製指標）與深拷貝（複製指向的內容）",
+    "知道為什麼「有解構函式就要想複製」—— rule of three",
+    "寫出自我賦值安全的複製賦值運算子",
+    "知道什麼時候該複製、什麼時候該 `= delete`、什麼時候該用 shared_ptr"
+  ],
+  "graders": [
+    "compile",
+    "unit_test",
+    "runtime_safety"
+  ],
+  "minTests": 9,
+  "bugCount": 2,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "預設（編譯器產生）的複製建構子，對「持有指標的類別」會做什麼？",
+      "choices": [
+        "深拷貝指標指向的內容",
+        "只複製指標本身的值",
+        "編譯錯誤",
+        "呼叫解構函式"
+      ],
+      "answer": "只複製指標本身的值",
+      "explain": "預設是**逐成員複製**（memberwise copy）：指標成員就是複製那個位址。結果是兩個物件指向同一塊記憶體 —— 一個改了另一個也會變，而且各自解構時會 delete 同一塊（double free）。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`a = a;` 這種自我賦值，複製賦值運算子的第一行該做什麼？",
+      "choices": [
+        "先 delete[] 自己的資料",
+        "檢查 this 與 &other 是否相同",
+        "先配置新記憶體",
+        "直接回傳 *this"
+      ],
+      "answer": "檢查 this 與 &other 是否相同",
+      "explain": "沒有這個檢查，`a = a` 會先 `delete[]` 自己的資料，再去複製「已經被釋放」的來源 —— 讀取已釋放記憶體。加上 `if (this != &other)` 就安全。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "什麼是 rule of three？",
+      "a": "只要你需要寫**解構函式、複製建構子、複製賦值運算子**其中任何一個，通常三個都要寫。因為它們共同管理同一份資源：解構負責釋放、複製負責取得新的一份、賦值負責「先放掉舊的再取得新的」。漏掉任何一個，資源就會洩漏或被釋放兩次。"
+    },
+    {
+      "q": "深拷貝與淺拷貝的差別，用一句話說明？",
+      "a": "淺拷貝複製**指標**（兩個物件指向同一份資料）；深拷貝複製**指標指向的內容**（兩個物件各有一份）。判斷標準：複製之後，修改其中一個會不會影響另一個 —— 會，就是淺拷貝。"
+    },
+    {
+      "q": "什麼時候該把複製 `= delete`，什麼時候該實作深拷貝？",
+      "a": "**獨佔資源**（檔案、socket、緩衝區）→ `= delete`，或直接用 `std::unique_ptr`（它會自動禁止複製）。**值語意**（數字、字串、陣列這種「複製一份沒關係」的東西）→ 實作深拷貝。判斷依據是語意，不是效能：`std::vector` 可以複製，`std::fstream` 不行。"
+    }
+  ],
+  "hints": [
+    "深拷貝要 `new int[n]` **再加上** `std::copy`；只配置不複製，內容會全是 0。",
+    "複製賦值：先配置新的、再 `delete[]` 舊的；`a = a` 要先檢查 `this == &other`。"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "id": "L0.03",
+  "order": 3,
+  "level": 0,
+  "title": "標頭檔、多檔案與連結錯誤",
+  "minutes": 30,
+  "prerequisites": [
+    "L0.02"
+  ],
+  "concepts": [
+    "header",
+    "translation-unit",
+    "linker",
+    "declaration-vs-definition"
+  ],
+  "objectives": [
+    "分辨「宣告」與「定義」，並知道編譯器只看得到宣告",
+    "解釋為什麼「編譯成功」之後還會出現 undefined reference",
+    "知道連結錯誤的三個常見原因：忘了檔案、簽章不符、定義在錯誤的地方"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 5,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "support": [
+    "support/geometry.cpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "你在 header 寫了 `int square(int);`，但沒有任何地方寫 `int square(int) { ... }`。哪個階段會報錯？",
+      "choices": [
+        "前置處理",
+        "編譯",
+        "連結",
+        "執行期"
+      ],
+      "answer": "連結",
+      "explain": "編譯器看到宣告就滿意了 —— 它相信「別人會提供定義」。等到連結階段找不到實作，才報 undefined reference。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`undefined reference to 'square(int)'` 最不可能是哪個原因？",
+      "choices": [
+        "忘了把 square.cpp 加進編譯",
+        "定義寫成 int square() { ... }（參數不符）",
+        "header 少了 include guard",
+        "定義寫在另一個 .cpp 但沒有一起連結"
+      ],
+      "answer": "header 少了 include guard",
+      "explain": "缺 include guard 會造成「重複定義」（multiple definition）或編譯錯誤，不是 undefined reference。"
+    }
+  ],
+  "hints": [
+    "`tasks.hpp` 宣告了 `square_area`，但沒有人定義它 —— 你要在 `submission.cpp` 寫出定義。",
+    "簽章要與標頭一字不差（回傳型別、參數、`const`），否則會變成「另一個多載」而連結失敗。"
+  ]
+}

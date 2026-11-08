@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CppForge · C++ 訓練場</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">C++</span>
+      <span class="name">CppForge</span>
+      <span class="sub">從零到職場級</span>
+    </div>
+
+    <div class="progress-wrap" title="已通過節點 / 全部節點">
+      <div class="progress"><div class="bar" id="progressBar"></div></div>
+      <span class="progress-text" id="progressText">0 / 0</span>
+    </div>
+
+    <div class="topActions">
+      <span class="chip accent" id="reviewChip" hidden title="待複習的卡片">複習</span>
+      <span class="chip" id="statChip" title="獨立完成率：第一次提交就通過的節點比例"></span>
+      <span class="chip" id="envChip">環境檢查中…</span>
+      <button class="ghost small" id="btnAtlas" title="查詢編譯器與執行期錯誤">錯誤圖鑑</button>
+      <button class="ghost small" id="btnDoctor">環境檢查</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-loading">載入課程…</div>
+    </aside>
+
+    <main class="workspace">
+      <section class="lesson" id="lesson">
+        <div class="empty">
+          <h2>選擇左邊的節點開始</h2>
+          <p>每個節點都有可執行的練習與自動評測，通過後才會解鎖下一個。</p>
+        </div>
+      </section>
+
+      <section class="codePane">
+        <div class="codeHeader">
+          <span class="fileTab" id="fileName">submission.cpp</span>
+          <div class="spacer"></div>
+          <span class="runState" id="runState"></span>
+          <button class="ghost small" id="btnReset" title="還原成這一節的起始碼">還原</button>
+          <button class="primary small" id="btnRun" disabled>
+            執行 <kbd>Ctrl</kbd><kbd>↵</kbd>
+          </button>
+        </div>
+        <div class="editor" id="editor"></div>
+        <div class="results" id="results">
+          <div class="results-empty">按「執行」送出這份程式碼；評測會編譯、跑隱藏測試、檢查記憶體與禁用寫法。</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal hidden" id="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalTitle">環境檢查</h3>
+        <button class="ghost small" id="modalClose">關閉</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="/vendor/monaco/vs/loader.js"></script>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+{
+  "id": "L1.03",
+  "order": 3,
+  "level": 1,
+  "title": "浮點數與精度：為什麼 0.1 + 0.2 不等於 0.3",
+  "minutes": 35,
+  "prerequisites": [
+    "L1.02"
+  ],
+  "concepts": [
+    "floating-point",
+    "double-vs-float",
+    "precision",
+    "epsilon",
+    "inf-nan"
+  ],
+  "objectives": [
+    "說出 `float` 與 `double` 的精度差異，以及什麼時候該用哪個",
+    "知道 `0.1 + 0.2 != 0.3` 的原因，並改用「誤差容忍」比較",
+    "用 `std::numeric_limits<double>::epsilon()` 而不自己背 1e-9",
+    "認得 `inf`、`-inf`、`nan` 這三個特殊值，並用 `std::isfinite` / `std::isinf` 檢查"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 8,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "steps": [
+    "`nearly_equal` 不可以用 `==`：浮點數幾乎不會剛好相等",
+    "`mean3` 三個參數都是 `double` —— 你的累加過程有沒有被截斷成整數？",
+    "`is_positive_inf` 要用 `std::isinf` 搭配正負判斷，不要用「大於某個很大的數」"
+  ],
+  "hints": [
+    "兩個浮點數比較要用「差距夠小」：`std::fabs(a - b) <= eps * std::max(1.0, std::fabs(a))`。直接 `a == b` 對 `0.1+0.2` 與 `0.3` 會是 false。",
+    "`mean3` 如果寫成 `int sum = a + b + c;` 就已經把小數截掉了，再除以 3 也救不回來。整條運算都要是 `double`。",
+    "`std::isinf(x)` 判斷是不是無限大；正負再用 `x > 0` 分。用 `x > 1e300` 會把有限的 `1e301` 也判成無限大。"
+  ],
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "在 C++ 裡 `0.1 + 0.2 == 0.3` 的結果是什麼？",
+      "choices": [
+        "true",
+        "false，因為二進位無法精確表示 0.1",
+        "編譯錯誤",
+        "未定義行為"
+      ],
+      "answer": "false，因為二進位無法精確表示 0.1",
+      "explain": "0.1 與 0.2 在二進位是無限循環小數，只能存近似值，相加的誤差讓結果與 0.3 的近似值不同。所以浮點數比較要用「差距在容忍範圍內」。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`float` 大約有幾位有效數字？",
+      "choices": [
+        "7 位",
+        "15 位",
+        "3 位",
+        "無限（看記憶體）"
+      ],
+      "answer": "7 位",
+      "explain": "`float` 是 32 位元（1 符號 + 8 指數 + 23 尾數），約 7 位有效數字；`double` 是 64 位元，約 15 位。金錢計算通常不用浮點，而用整數（以分為單位）。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`double x = 0.0 / 0.0;` 之後 `x` 是什麼？",
+      "choices": [
+        "0",
+        "nan（不是數）",
+        "inf",
+        "程式直接崩潰"
+      ],
+      "answer": "nan（不是數）",
+      "explain": "IEEE 754 定義了 `inf`、`-inf`、`nan`。`nan` 的特性是「與任何值比較（包括自己）都是 false」，所以要用 `std::isnan(x)` 判斷，不能用 `x == x`。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "為什麼浮點數不能直接用 `==` 比較？該怎麼比？",
+      "a": "因為二進位無法精確表示大部分十進位小數（0.1、0.2、0.3 都是近似值），運算後誤差會累積。正確做法是比較**差距**：`std::fabs(a - b) <= eps * max(1.0, fabs(a), fabs(b))`。`eps` 用 `std::numeric_limits<double>::epsilon()` 當基準，再依需求放寬。"
+    },
+    {
+      "q": "`float` 與 `double` 怎麼選？",
+      "a": "預設用 `double`：精度 15 位、運算成本在現代 CPU 上幾乎相同。只有在「大量資料要省記憶體」或「GPU/嵌入式」時才用 `float`（7 位精度）。**金錢不要用浮點**，用整數（以分為單位）。"
+    },
+    {
+      "q": "`nan` 有什麼特別？怎麼檢查？",
+      "a": "`nan` 是「不是數」，任何與它的比較（`==`、`<`、`>`）都是 false —— 包括 `nan == nan`。所以要用 `std::isnan(x)`。它也無法排序，若把 `nan` 放進排序容器會破壞嚴格弱序。"
+    }
+  ]
+}

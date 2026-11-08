@@ -1,0 +1,88 @@
+{
+  "id": "L1.07",
+  "order": 7,
+  "level": 1,
+  "title": "從 stdin 讀資料：迴圈、累加、極值",
+  "minutes": 30,
+  "prerequisites": [
+    "L1.06"
+  ],
+  "concepts": [
+    "iostream",
+    "extraction",
+    "loop",
+    "accumulator"
+  ],
+  "objectives": [
+    "用 std::cin >> 讀取一串以空白分隔的整數",
+    "知道 >> 會自動跳過空白，也知道它遇到格式錯誤會「卡住」",
+    "寫出同時維護 sum / count / max 三個狀態的迴圈"
+  ],
+  "graders": [
+    "compile",
+    "io_match"
+  ],
+  "io": {
+    "cases": [
+      {
+        "name": "基本：正數混排",
+        "stdin": "5\n3 1 7 2 2\n",
+        "expect": "sum=15 count=5 max=7\n"
+      },
+      {
+        "name": "單一負數",
+        "stdin": "1\n-4\n",
+        "expect": "sum=-4 count=1 max=-4\n"
+      },
+      {
+        "name": "全部負數",
+        "stdin": "3\n-9 -1 -5\n",
+        "expect": "sum=-15 count=3 max=-1\n"
+      }
+    ]
+  },
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`int n; std::cin >> n;` 的輸入是 `abc`。之後 `std::cin` 的狀態會怎樣？",
+      "choices": [
+        "讀到 0，並繼續正常運作",
+        "進入 fail 狀態，之後所有 >> 都失敗",
+        "拋出例外",
+        "跳過 abc 讀下一個"
+      ],
+      "answer": "進入 fail 狀態，之後所有 >> 都失敗",
+      "explain": "這是 C++ I/O 最常見的靜默失敗：轉換失敗會設定 failbit，之後每次 >> 都立刻失敗且不改動變數。要恢復得呼叫 `std::cin.clear()` 並清掉緩衝區。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "要找最大值，`max` 變數應該初始化成什麼最安全？",
+      "choices": [
+        "0",
+        "第一個元素",
+        "INT_MAX",
+        "-1"
+      ],
+      "answer": "第一個元素",
+      "explain": "初始化成 0 在「全部是負數」的資料上會錯（最大值永遠不回 0）。用第一個元素當種子，或初始化成 `std::numeric_limits<int>::min()`。"
+    }
+  ],
+  "hints": [
+    "先讀 `n`，再讀 `n` 個整數。最大值建議用「第一個讀到的值」初始化，不要用 `0`（全負數會錯）。",
+    "輸出格式是 `sum=<總和> count=<n> max=<最大值>`，一個空白都不能多。"
+  ]
+}

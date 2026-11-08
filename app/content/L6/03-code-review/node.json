@@ -1,0 +1,86 @@
+{
+  "id": "L6.03",
+  "order": 3,
+  "level": 6,
+  "title": "程式碼審查：別人的環形緩衝區有三個 bug",
+  "minutes": 45,
+  "prerequisites": [
+    "L6.02"
+  ],
+  "concepts": [
+    "code-review",
+    "ring-buffer",
+    "modular-arithmetic",
+    "boundary-conditions"
+  ],
+  "objectives": [
+    "在有註解背書的程式碼裡找出錯誤（註解會說謊）",
+    "用模運算（`%`）實作環繞索引，並確認邊界",
+    "分辨「滿了之後的行為」與「未滿時的行為」",
+    "用測試把邊界（0、1、剛滿、剛超過）逐一釘住"
+  ],
+  "graders": [
+    "compile",
+    "unit_test",
+    "runtime_safety"
+  ],
+  "minTests": 9,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "環形緩衝區容量 3，依序 push 1,2,3,4 之後，`at(0)` 應該是什麼？",
+      "choices": [
+        "1",
+        "2",
+        "4",
+        "3"
+      ],
+      "answer": "2",
+      "explain": "滿了之後最舊的被覆寫：push 4 會蓋掉 1。所以內容由舊到新是 2,3,4，`at(0)` = 2。這種「覆寫最舊」的語意要特別注意 —— 它與「滿了就拒絕」是不同的設計，而註解常常沒寫清楚。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "把邏輯索引 `i`（0 = 最舊）轉成 `data_` 的索引，公式是什麼？",
+      "choices": [
+        "head_ + i",
+        "(head_ + i) % capacity",
+        "(i - head_) % capacity",
+        "head_ * i"
+      ],
+      "answer": "(head_ + i) % capacity",
+      "explain": "`head_` 是最舊元素的位置，往前推 `i` 格就是第 i 個元素。加上 `% capacity` 讓它繞回開頭 —— 這就是「環形」的全部：一個模運算。漏掉 `%` 就是本節的第一個 bug。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "為什麼「程式碼有註解說它是對的」不能當作證據？",
+      "a": "因為註解不會被編譯器檢查，也不會有測試失敗。本節的起始碼寫著「滿了就覆寫最舊的」，但實作其實是「滿了就丟棄」—— 註解描述的是**意圖**，實作才是**事實**。審查時永遠看程式碼，不要相信描述它的文字。"
+    },
+    {
+      "q": "環形緩衝區最容易錯的三個地方？",
+      "a": "① **沒做模運算**（`data_[i]` 而不是 `data_[(head_+i) % capacity]`）；② **`head_` 更新時機**（滿的時候 push 要同時推進 head_，未滿時不用）；③ **`size_` 與容量的關係**（`size_` 上限是 capacity，但滿了之後不再成長）。這三個剛好是本節的三個 bug。"
+    }
+  ],
+  "hints": [
+    "`push` 在「滿了」的時候要覆寫最舊的並推進 `head_`；未滿時才往尾端加。",
+    "`at` 與 `to_vector` 都要用 `(head_ + i) % capacity` 環繞；`to_vector` 是由舊到新。"
+  ]
+}

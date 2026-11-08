@@ -1,0 +1,73 @@
+{
+  "id": "L1.13",
+  "order": 13,
+  "level": 1,
+  "title": "std::string：拼接、計數、修剪",
+  "minutes": 30,
+  "prerequisites": [
+    "L1.12"
+  ],
+  "concepts": [
+    "std-string",
+    "concatenation",
+    "trim",
+    "byte-vs-char"
+  ],
+  "objectives": [
+    "用 std::string 做拼接，並避免多出尾端分隔符",
+    "知道 size() 算的是位元組不是「字」",
+    "實作 trim 時處理空白、Tab、換行三種字元"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 8,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`std::string(\"中\").size()` 在 UTF-8 下是多少？",
+      "choices": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "answer": "3",
+      "explain": "size() 回傳位元組數。UTF-8 的「中」是 3 個位元組，所以 size() == 3，但肉眼只看見一個字。這正是 C++ 處理文字的第一個坑。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "用迴圈拼 `a, b, c` 時，最常見的錯誤是？",
+      "choices": [
+        "少一個元素",
+        "最後多一個分隔符",
+        "順序顛倒",
+        "記憶體洩漏"
+      ],
+      "answer": "最後多一個分隔符",
+      "explain": "「每輪都補分隔符」會讓結尾多一個。要嘛在第一個元素前才補，要嘛事後刪掉最後一個。"
+    }
+  ],
+  "hints": [
+    "`std::string::size()` 算的是**位元組**，不是字元（UTF-8 下一個中文是 3 個位元組）。",
+    "要修剪前後空白：先找第一個與最後一個非空白的位置，再 `substr`。"
+  ]
+}

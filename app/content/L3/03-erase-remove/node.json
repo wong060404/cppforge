@@ -1,0 +1,90 @@
+{
+  "id": "L3.03",
+  "order": 3,
+  "level": 3,
+  "title": "erase-remove idiom：為什麼 remove 沒有刪掉東西",
+  "minutes": 40,
+  "prerequisites": [
+    "L3.02"
+  ],
+  "concepts": [
+    "erase-remove-idiom",
+    "std-unique",
+    "set",
+    "set-intersection",
+    "invalidation"
+  ],
+  "objectives": [
+    "解釋為什麼 `std::remove` 不會改變 `size()`，並寫出正確的 erase-remove idiom",
+    "用 `sort` + `unique` + `erase` 完成去重",
+    "知道 `std::set` 自動排序去重，並能用 `set_intersection` 求交集",
+    "知道 erase 會讓被刪位置之後的迭代器失效"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 9,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`std::unique(v.begin(), v.end())` 之後 `v.size()` 會變嗎？",
+      "choices": [
+        "會，變小",
+        "不會 —— 它只把重複的往後搬，尾端是「不確定值」",
+        "會變大",
+        "編譯錯誤"
+      ],
+      "answer": "不會 —— 它只把重複的往後搬，尾端是「不確定值」",
+      "explain": "`std::unique` 回傳新的邏輯結尾。要真的縮小容器必須 `v.erase(new_end, v.end());`。而且它只移除**相鄰**的重複，所以一定要先 `sort`。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "在迴圈中 `v.erase(it)` 之後，`it` 還能用嗎？",
+      "choices": [
+        "可以，它會自動指向下一個",
+        "不行 —— 被刪除位置及之後的迭代器都失效了",
+        "只有 vector 會失效",
+        "可以，只是內容不確定"
+      ],
+      "answer": "不行 —— 被刪除位置及之後的迭代器都失效了",
+      "explain": "`erase` 會讓「被刪位置到 end()」的所有迭代器失效。正確寫法是 `it = v.erase(it);`（erase 回傳下一個有效位置），或用 erase-remove idiom 一次處理。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "為什麼 `std::remove` 不改變容器大小？",
+      "a": "因為它只拿到兩個迭代器，不知道容器的存在，所以無法改變大小。它做的是「把要保留的元素往前搬」，回傳新的邏輯結尾；尾端留下的是不確定的值。真正的刪除要呼叫成員函式 `erase`。"
+    },
+    {
+      "q": "`std::unique` 為什麼一定要先 `sort`？",
+      "a": "因為 `unique` 只移除**相鄰**的重複元素。若資料沒排序，相同的值可能分散各處，`unique` 不會處理到。完整寫法是 `sort` → `unique` → `erase(end, v.end())`；或直接用 `std::set`（自動排序去重）。"
+    },
+    {
+      "q": "`std::set` 與「排序去重後的 vector」差在哪？",
+      "a": "`set` 是**平衡二元樹**：查詢 O(log n)、走訪有序、插入自動去重，但節點分散在記憶體各處（cache 不友好）。排序後的 vector 走訪極快（連續記憶體）但插入是 O(n)。選擇依據是「你要常常查/插，還是主要走訪」。"
+    }
+  ],
+  "hints": [
+    "`std::unique` 只把重複往後搬，要 `erase(new_end, v.end())` 才會真的縮小。",
+    "`remove_if` 的謂詞是「要移除的條件」；寫反了就會把要留的刪掉。"
+  ]
+}

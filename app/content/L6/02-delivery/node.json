@@ -1,0 +1,114 @@
+{
+  "id": "L6.02",
+  "order": 2,
+  "level": 6,
+  "title": "交付一個完整程式：從 stdin 到排序報表",
+  "minutes": 50,
+  "prerequisites": [
+    "L6.01"
+  ],
+  "concepts": [
+    "integration",
+    "io-parsing",
+    "aggregation",
+    "sorting-with-tiebreak",
+    "overflow"
+  ],
+  "objectives": [
+    "把「讀輸入 → 聚合 → 排序 → 輸出」四個步驟組成一個可交付的程式",
+    "用 `std::map` 做分組聚合，再搬到 vector 排序",
+    "寫出包含 tie-break 的比較函式（金額相同時按名稱）",
+    "知道金額累加要用 `long long`，不是 `int`"
+  ],
+  "graders": [
+    "compile",
+    "io_match"
+  ],
+  "minTests": 4,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "io": {
+    "cases": [
+      {
+        "name": "基本：三個不同品項",
+        "stdin": "3\napple 2 100\nbanana 1 300\ncherry 5 20\n",
+        "stdout": "banana 1 300\napple 2 200\ncherry 5 100\nTOTAL 600\n"
+      },
+      {
+        "name": "同名要合併",
+        "stdin": "4\npen 2 10\nbook 1 250\npen 3 10\nbook 2 250\n",
+        "stdout": "book 3 750\npen 5 50\nTOTAL 800\n"
+      },
+      {
+        "name": "大數（金額超過 int）與同金額 tie-break",
+        "stdin": "3\nzebra 100000 100000\nalpha 100000 100000\nmid 1 5\n",
+        "stdout": "alpha 100000 10000000000\nzebra 100000 10000000000\nmid 1 5\nTOTAL 20000000005\n"
+      },
+      {
+        "name": "空輸入",
+        "stdin": "0\n",
+        "stdout": "TOTAL 0\n"
+      }
+    ]
+  },
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "排序要「金額由大到小，同金額按名稱字典序」，比較函式該怎麼寫？",
+      "choices": [
+        "return a.amount > b.amount; 就好",
+        "if (a.amount != b.amount) return a.amount > b.amount; return a.name < b.name;",
+        "先按名稱排，再按金額排（兩次 sort）",
+        "return a.amount >= b.amount;"
+      ],
+      "answer": "if (a.amount != b.amount) return a.amount > b.amount; return a.name < b.name;",
+      "explain": "比較函式必須是**嚴格弱序**：`>=` 會讓相等元素互相比較都回 true，破壞排序不變式（`std::sort` 可能崩潰）。tie-break 要寫在同一支比較函式裡，而不是排兩次（第二次會覆蓋第一次的結果）。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "合計金額 `100000 * 100000` 用 `int` 存會怎樣？",
+      "choices": [
+        "自動變成 long long",
+        "有號整數溢位（UB）",
+        "拋出例外",
+        "編譯錯誤"
+      ],
+      "answer": "有號整數溢位（UB）",
+      "explain": "`100000 × 100000 = 10¹⁰`，遠超過 `int` 的 2.1×10⁹。有號溢位是 UB，實務上常見回繞成負數 —— 你的報表就會出現負的總額。金額一律用 `long long`（或整數分）。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "為什麼 `std::sort` 的比較函式不能用 `>=`？",
+      "a": "因為 `std::sort` 要求**嚴格弱序**（strict weak ordering）：`comp(a, a)` 必須是 false。用 `>=` 時相等元素互比都回 true，會破壞排序演算法的不變式 —— 實務上常見的後果是 `std::sort` 存取越界而崩潰。規則：比較函式永遠用 `<` 或 `>`，不要用 `<=` 或 `>=`。"
+    },
+    {
+      "q": "「分組聚合」為什麼常用 `std::map` 再做一次排序？",
+      "a": "`std::map` 提供 O(log n) 的「找得到就更新、找不到就建立」語意（`m[key] += ...`），很適合聚合。但它只能按 key 排序，而報表要按**金額**排序 —— 所以聚合完把資料搬進 `std::vector`，再用自訂比較函式排一次。這是「用對的容器做對的事」的典型分工。"
+    },
+    {
+      "q": "交付一個 CLI 程式時，除了主要邏輯還要處理什麼？",
+      "a": "至少三件：① **輸入失敗**（讀不到 n、行數不足）不能崩潰；② **邊界**（n = 0、空行）；③ **輸出格式**（每行結尾的換行、數字不加千分位）。本節的評測會逐字比對 stdout，所以格式錯誤與邏輯錯誤一樣算錯 —— 這正是真實交付的樣子。"
+    }
+  ],
+  "hints": [
+    "同名要合併：用 `std::map<std::string, Row>` 累加數量與金額，再搬進 vector 排序。",
+    "排序：金額由大到小，同金額按名稱字典序；比較函式不能用 `>=`（會違反嚴格弱序）。"
+  ]
+}

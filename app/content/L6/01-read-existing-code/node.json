@@ -1,0 +1,95 @@
+{
+  "id": "L6.01",
+  "order": 1,
+  "level": 6,
+  "title": "讀陌生程式碼：介面文件沒寫的事，只有原始碼知道",
+  "minutes": 45,
+  "prerequisites": [
+    "L5.02"
+  ],
+  "concepts": [
+    "reading-code",
+    "module-integration",
+    "interface-contract",
+    "documented-gotcha"
+  ],
+  "objectives": [
+    "從既有模組的標頭檔與實作讀出**真正的**語意（不是猜的）",
+    "處理 `optional` 回傳值，而不是假設一定有資料",
+    "整合兩個模組並遵守輸出格式契約",
+    "知道「平均值」這種看似中性的詞，在別人的程式碼裡可能有特殊定義"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 10,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp",
+    "stats.hpp",
+    "format.hpp"
+  ],
+  "support": [
+    "support/stats.cpp",
+    "support/format.cpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`stats::compute({0, 10, 20})` 的 mean 是多少？",
+      "choices": [
+        "10.0",
+        "15.0",
+        "7.5",
+        "0.0"
+      ],
+      "answer": "15.0",
+      "explain": "這個模組的 mean 只算**非零**元素（0 代表「這次沒讀到值」）：(10 + 20) / 2 = 15。若你以為是全體平均 (0+10+20)/3 = 10，後面所有「高於平均」的計算都會錯。**這就是為什麼要讀實作，不只讀名字。**"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`stats::compute` 對空 vector 回傳什麼？",
+      "choices": [
+        "0",
+        "nullopt",
+        "空字串",
+        "丟出例外"
+      ],
+      "answer": "nullopt",
+      "explain": "回傳 `std::nullopt`。所以呼叫端必須先檢查 `has_value()`，不能直接 `.value()` —— 那會丟 `bad_optional_access`。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "為什麼「讀別人的程式碼」需要看實作，不能只看函式名稱？",
+      "a": "因為函式名稱只表達**意圖**，不表達**語意細節**。本節的 `stats::compute` 名字叫「compute」，但它的 `mean` 只算非零元素 —— 這是為了處理感測器資料的特殊需求，寫在註解與實作裡。名字看起來中性，語意卻不中性。真實專案裡，這一類「反直覺但合理」的語意就是整合失敗的主因。"
+    },
+    {
+      "q": "拿到一個回傳 `std::optional` 的函式，呼叫端的第一件事是什麼？",
+      "a": "檢查有沒有值（`has_value()` 或 `if (auto v = f())`）。直接 `.value()` 或 `*opt` 等於斷言「一定有值」，空的時候 `.value()` 丟 `bad_optional_access`、`*opt` 則是未定義行為。回傳 `optional` 就是在說「可能沒有」，忽略它等於違反契約。"
+    },
+    {
+      "q": "整合兩個模組時，最容易出錯的地方是什麼？",
+      "a": "**格式與精度的契約**。本節的 `fmt::fixed(x, 2)` 要求兩位小數、`fmt::percent(r)` 固定一位小數並附 `%`。這一類「輸出長什麼樣」的規格通常不在型別裡（都是 `std::string`），所以編譯器完全幫不上忙 —— 只能靠讀規格與測試。"
+    }
+  ],
+  "hints": [
+    "`stats::compute` 的 `mean` 只算**非零**元素；`n`/`min`/`max` 是全部元素。",
+    "空 vector 回 `nullopt`，要先 `has_value()`；`fmt::fixed(x, 2)` 的第二個參數是小數位數。"
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "testedAt": "2026-11-05T14:48:51.834Z",
+  "limits": {
+    "MEM_MB": 256,
+    "TIMEOUT_MS": 3000,
+    "PROCS": 4,
+    "OUT_CAP": 1048576
+  },
+  "results": [
+    {
+      "id": "normal",
+      "what": "正常程式（控制組）",
+      "verdict": "PASS",
+      "detail": "exit=0, 峰值 5MB",
+      "meta": {
+        "exitCode": 0,
+        "exitCodeHex": "0x00000000",
+        "timedOut": false,
+        "elapsedMs": 78,
+        "peakMemoryBytes": 5656576,
+        "memLimitBytes": 268435456,
+        "stdoutBytes": 9,
+        "stderrBytes": 0,
+        "stdoutTruncated": false,
+        "stderrTruncated": false,
+        "stderrPreview": ""
+      }
+    },
+    {
+      "id": "cpu-loop",
+      "what": "無窮迴圈（CPU 燒機）",
+      "verdict": "PASS",
+      "detail": "timedOut=true, 3016ms 後終止",
+      "meta": {
+        "exitCode": 1,
+        "exitCodeHex": "0x00000001",
+        "timedOut": true,
+        "elapsedMs": 3016,
+        "peakMemoryBytes": 5664768,
+        "memLimitBytes": 268435456,
+        "stdoutBytes": 0,
+        "stderrBytes": 0,
+        "stdoutTruncated": false,
+        "stderrTruncated": false,
+        "stderrPreview": ""
+      }
+    },
+    {
+      "id": "mem-bomb",
+      "what": "記憶體炸彈（每次 32MB，最多 6.4GB）",
+      "verdict": "PASS",
+      "detail": "峰值 225MB（上限 256MB）",
+      "meta": {
+        "exitCode": 3,
+        "exitCodeHex": "0x00000003",
+        "timedOut": false,
+        "elapsedMs": 63,
+        "peakMemoryBytes": 235995136,
+        "memLimitBytes": 268435456,
+        "stdoutBytes": 20,
+        "stderrBytes": 0,
+        "stdoutTruncated": false,
+        "stderrTruncated": false,
+        "stderrPreview": ""
+      }
+    },
+    {
+      "id": "output-flood",
+      "what": "輸出洪水（40MB，上限 1MB）",
+      "verdict": "PASS",
+      "detail": "產生 40.0MB → 落地 1024KB（截斷=true）",
+      "meta": {
+        "exitCode": 0,
+        "exitCodeHex": "0x00000000",
+        "timedOut": false,
+        "elapsedMs": 125,
+        "peakMemoryBytes": 5660672,
+        "memLimitBytes": 268435456,
+        "stdoutBytes": 41943040,
+        "stderrBytes": 0,
+        "stdoutTruncated": true,
+        "stderrTruncated": false,
+        "stderrPreview": ""
+      }
+    },
+    {
+      "id": "orphan-child",
+      "what": "孤兒行程（父行程先退出，子行程不該存活）",
+      "verdict": "PASS",
+      "detail": "已清除，無殘留",
+      "meta": {
+        "exitCode": 0,
+        "exitCodeHex": "0x00000000",
+        "timedOut": false,
+        "elapsedMs": 78,
+        "peakMemoryBytes": 5660672,
+        "memLimitBytes": 268435456,
+        "stdoutBytes": 0,
+        "stderrBytes": 0,
+        "stdoutTruncated": false,
+        "stderrTruncated": false,
+        "stderrPreview": ""
+      }
+    },
+    {
+      "id": "proc-flood",
+      "what": "行程爆量（連開 10 個長命子行程，上限 4）",
+      "verdict": "PASS",
+      "detail": "spawned_ok=3 failed=7",
+      "meta": {
+        "exitCode": 0,
+        "exitCodeHex": "0x00000000",
+        "timedOut": false,
+        "elapsedMs": 78,
+        "peakMemoryBytes": 5660672,
+        "memLimitBytes": 268435456,
+        "stdoutBytes": 23,
+        "stderrBytes": 0,
+        "stdoutTruncated": false,
+        "stderrTruncated": false,
+        "stderrPreview": ""
+      }
+    }
+  ]
+}

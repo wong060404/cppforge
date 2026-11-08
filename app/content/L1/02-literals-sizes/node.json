@@ -1,0 +1,96 @@
+{
+  "id": "L1.02",
+  "order": 2,
+  "level": 1,
+  "title": "字面值、sizeof 與型別大小：一個 int 到底有多大",
+  "minutes": 35,
+  "prerequisites": [
+    "L1.01"
+  ],
+  "concepts": [
+    "literal",
+    "integer-bases",
+    "suffix",
+    "sizeof",
+    "numeric-limits",
+    "fixed-width-int"
+  ],
+  "objectives": [
+    "用四種進位寫同一個整數（`255` / `0xFF` / `0377` / `0b11111111`）",
+    "用後綴指定型別（`42u`、`42L`、`42ULL`、`1.5f`）",
+    "用 `sizeof` 得到位元組數，並知道位元組數 ≠ 位元數",
+    "知道 `int` 的大小依平台而異，需要固定寬度時用 `int32_t` / `uint64_t`",
+    "用 `std::numeric_limits<T>` 取得極值，而不是自己背數字"
+  ],
+  "graders": [
+    "compile",
+    "unit_test"
+  ],
+  "minTests": 8,
+  "bugCount": 3,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "steps": [
+    "`int_bits` 要回「位元數」；`sizeof` 給的是位元組數",
+    "`fits_in_short` 用 `std::numeric_limits<short>` 的 `min()`/`max()`，不要手寫 -32767",
+    "`low_byte` 是取「最低 8 位」，想想該用什麼運算遮罩"
+  ],
+  "hints": [
+    "`sizeof(int)` 是 4（位元組），一個位元組是 8 位元 → 要乘 8。寫成 `static_cast<int>(sizeof(int)) * 8` 就不會有型別警告。",
+    "`short` 的範圍是 -32768 到 32767，不是 -32767。不要背：`std::numeric_limits<short>::min()` 與 `::max()` 會給你正解，而且換平台也對。",
+    "取最低 8 位要用位元 AND：`v & 0xFF`。用位移（`>>`）是往高位走，方向剛好相反。"
+  ],
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`sizeof(int)` 在 32 位元 `int` 的平台上回傳多少？",
+      "choices": [
+        "4",
+        "32",
+        "8",
+        "4.0"
+      ],
+      "answer": "4",
+      "explain": "`sizeof` 的單位是**位元組**（byte），而且回傳型別是 `std::size_t`。`int` 佔 4 個位元組 = 32 位元。要位元數就得乘 8。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`0xFF`、`0377`、`255`、`0b11111111` 這四個字面值，哪一個**不是** 255？",
+      "choices": [
+        "全都是 255",
+        "0xFF",
+        "0377",
+        "0b11111111"
+      ],
+      "answer": "全都是 255",
+      "explain": "`0x` 是十六進位、開頭的 `0` 是八進位、`0b` 是二進位。四個都等於 255。**注意**：`0377` 開頭的 0 很容易被誤認為十進位，這是 C++ 的經典陷阱。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "`int` 的大小依平台而異，想要「一定是 32 位元」該用哪個型別？",
+      "choices": [
+        "int32_t",
+        "int",
+        "long",
+        "short"
+      ],
+      "answer": "int32_t",
+      "explain": "`int`、`long` 的寬度由實作決定（`long` 在 Windows 是 32 位、Linux 是 64 位）。要跨平台固定寬度就用 `<cstdint>` 的 `int32_t` / `uint64_t`，它們的寬度是標準規定的。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "`sizeof` 回傳什麼？單位是什麼？",
+      "a": "回傳 `std::size_t`，單位是**位元組**。`sizeof(int)` 是 4（位元組），不是 32。位元數 = `sizeof(T) * 8`。另外 `sizeof` 是編譯期就決定的（`sizeof` 運算式不會被求值）。"
+    },
+    {
+      "q": "為什麼 `int` 的大小不能寫死 4，而要考慮平台？",
+      "a": "C++ 標準只規定 `int` 至少 16 位元、且 `short <= int <= long <= long long`，沒有規定剛好 32 位。Windows 的 `long` 是 32 位、Linux 是 64 位就是實例。需要精確寬度（檔案格式、二進位協定、雜湊）時用 `<cstdint>` 的 `int32_t`/`uint64_t`。"
+    },
+    {
+      "q": "`std::numeric_limits<T>` 可以拿到什麼？為什麼不自己背極值？",
+      "a": "`min()`、`max()`、`digits`（有效位元數）、`is_signed`、`epsilon()`（浮點精度）等。自己背容易錯一位（例如把 `short` 的 -32768 記成 -32767），而且換平台或換型別就要重背。用它，程式碼本身就說明意圖。"
+    }
+  ]
+}

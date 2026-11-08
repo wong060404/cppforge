@@ -1,0 +1,84 @@
+{
+  "id": "L1.16",
+  "order": 16,
+  "level": 1,
+  "title": "固定大小陣列：std::array 與「不能改大小」",
+  "minutes": 30,
+  "prerequisites": [
+    "L1.15"
+  ],
+  "concepts": [
+    "std-array",
+    "fixed-size",
+    "swap",
+    "index-vs-value"
+  ],
+  "objectives": [
+    "分辨 std::array（編譯期固定大小）與 std::vector（可增長）",
+    "用 size() 而不是手寫長度，並且不越界",
+    "實作就地反轉，並理解為什麼「每輪都交換」會讓陣列變回原樣"
+  ],
+  "graders": [
+    "compile",
+    "unit_test",
+    "runtime_safety"
+  ],
+  "minTests": 9,
+  "interface": [
+    "tasks.hpp"
+  ],
+  "grader": {
+    "compileFlags": [
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror"
+    ],
+    "limits": {
+      "timeoutMs": 5000,
+      "memMb": 256,
+      "procs": 4,
+      "outCap": 65536
+    }
+  },
+  "drills": [
+    {
+      "kind": "choice",
+      "prompt": "`sizeof(arr) / sizeof(arr[0])` 對 `std::array<int,5>` 會得到什麼？",
+      "choices": [
+        "5",
+        "20",
+        "8",
+        "編譯錯誤"
+      ],
+      "answer": "5",
+      "explain": "`sizeof(std::array<int,5>)` 是 20（5×4），除以 `sizeof(int)`=4 得到 5 —— 這次剛好對。但這是為了 C 陣列寫的技巧，`std::array` 有 `size()` 就該用 `size()`，意圖更清楚也不會在換型別時算錯。"
+    },
+    {
+      "kind": "choice",
+      "prompt": "反轉 `{1,2,3,4,5}` 的迴圈如果要走訪「全部」索引，結果會是什麼？",
+      "choices": [
+        "完全反轉",
+        "不變",
+        "只剩前半",
+        "越界崩潰"
+      ],
+      "answer": "不變",
+      "explain": "走訪全部 5 個索引並和對稱位置交換，等於每個配對換了兩次 → 回到原樣。只需走訪前一半：`i < n/2`。"
+    }
+  ],
+  "cards": [
+    {
+      "q": "什麼時候用 `std::array`，什麼時候用 `std::vector`？",
+      "a": "**大小在編譯期就知道且不變** → `std::array<T,N>`：不配置堆積記憶體、大小是型別的一部分、可 `constexpr`。**大小要執行期才知道或會變** → `std::vector<T>`。兩者都有 `size()`、`operator[]`、迭代器與範圍 for。"
+    },
+    {
+      "q": "為什麼「走訪全部索引做對稱交換」不會反轉陣列？",
+      "a": "因為每個配對被交換了兩次（例如 i=0 與 i=4 換一次，i=4 與 i=0 又換一次），兩次等於沒換。正確寫法是只走前半：`for (i = 0; i < n/2; ++i) swap(a[i], a[n-1-i])`。"
+    }
+  ],
+  "hints": [
+    "`std::array` 的大小在編譯期固定；`size()` 回傳的是 `size_t`。",
+    "反轉時若走訪「全部」索引做對稱交換，每一對會換兩次 = 沒換；只需走訪前一半。"
+  ]
+}
