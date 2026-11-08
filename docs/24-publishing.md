@@ -1,60 +1,79 @@
 # 發佈到 GitHub
 
-> 這份文件說明怎麼把 CppForge 推上 GitHub，以及在別台機器上怎麼跑起來。
+> 這份文件記錄 CppForge 如何上到 GitHub，以及在別台機器上怎麼跑起來。
 
 ---
 
-## 1. 目前狀態（本機已完成的部分）
+## 0. 已發佈 ✅
+
+**<https://github.com/wong060404/cppforge>**（public，預設分支 `main`）
+
+| 項目 | 值 |
+|---|---|
+| 遠端 commit | `1bd2996`（與本機 HEAD 一致） |
+| 遠端檔案數 | 305 |
+| 內容 | 40 個節點、25 份文件、完整的伺服器／前端／lib |
+| 已排除 | `app/.vendor/`（Monaco 27 MB）、`*.db`、`*.exe`、`*.o` |
+
+驗證方式：用**未認證**的公開 API 比對推送結果（commit sha、檔案清單、
+README 可讀取、`.vendor` 與產物確實不在遠端）。
+
+### 怎麼推的（給未來參考）
+
+這台機器的 `git push` 會被 Git Credential Manager 擋住 ——
+GCM 需要 named pipe，而沙箱不允許（`sh.exe: couldn't create signal pipe`）。
+繞法是**把憑證放進 URL**，這樣 git 就不會啟動 helper：
+
+```powershell
+git -c credential.helper= push "https://<user>:<token>@github.com/<user>/<repo>.git" main:main
+```
+
+> token 不會寫進 `.git/config`（remote 仍是乾淨網址），但會出現在指令列，
+> 所以用完應立刻到 GitHub 撤銷。
+
+---
+
+## 1. Repo 準備過程（已完成）
 
 | 項目 | 狀態 |
 |---|---|
 | Git repo | ✅ 已初始化（分支 `main`） |
-| 初始提交 | ✅ `CppForge：從零到職場級的 C++ 訓練系統`（304 個檔案 / 23,933 行） |
-| 追蹤的檔案大小 | 0.84 MB（`.git` 0.5 MB） |
-| 脫敏 | ✅ 機器專屬路徑已換成 `<FORGE_HOME>` / `<TEMP>` |
+| 提交 | 2 個：專案本体、發佈文件 |
+| 追蹤的檔案大小 | 0.84 MB（`.git` 約 0.5 MB） |
+| 脫敏 | ✅ 機器專屬路徑已換成 `<FORGE_HOME>` / `<TEMP>` / `<CS2310_DIR>` |
 | 排除 | `app/.vendor/`（Monaco 27 MB 建置產物）、`node_modules/`、`*.db`、`*.exe`、`*.o`、暫存腳本 |
 | 換行 | `.gitattributes` 統一 LF（`*.cmd` 用 CRLF） |
 
-**還沒做的**：建立 GitHub 上的遠端 repo、`git push`。
-原因：這台機器沒有 `gh` CLI、沒有 `GITHUB_TOKEN`、沒有 SSH key，
-而且 PowerShell 的 HTTPS 是壞的（schannel 憑證問題），無法互動式登入。
+### 本機環境的兩個坑
+
+1. **`git clone` 與需要認證的 `git` 操作會失敗** —— 它們會啟動 `sh.exe` 或
+   Credential Manager，而兩者都需要 named pipe（沙箱阻擋）。
+   公開 repo 的唯讀操作（`git ls-remote`）不受影響。
+2. **`git push` 一定要把憑證放在 URL**（見上面 §0），否則會走 GCM 而失敗。
 
 ---
 
-## 2. 你要做的三步
+## 2. 之後要更新的話
 
-### 步驟 1：在 GitHub 建一個空 repo
-
-到 <https://github.com/new>：
-
-- **Repository name**：`cppforge`（或你喜歡的名字）
-- **Visibility**：Public 或 Private（都可以）
-- **不要**勾 "Add a README file"、不要加 .gitignore、不要加 license
-  （本機已經有內容了，遠端必須是空的）
-
-### 步驟 2：接上遠端並推送
-
-在 `cppforge/` 目錄下：
+repo 已存在，`origin` 也接好了，所以日常更新就是：
 
 ```powershell
-git remote add origin https://github.com/<你的帳號>/cppforge.git
-git push -u origin main
+cd cppforge
+git add -A
+git commit -m "你的訊息"
+git push            # 在你自己的一般 PowerShell 視窗執行（GCM 有憑證）
 ```
 
-第一次 push 會跳出視窗要求登入（Git Credential Manager）。
-登入後憑證會存在 Windows 認證管理員，之後不必再輸入。
+> **注意**：在這台機器的受限環境（沙箱）裡 `git push` 會失敗，因為 GCM 需要
+> named pipe。若要在那個環境推，必須用 §0 的「憑證放在 URL」寫法。
 
-> 如果你已經登入過 GitHub Desktop 或 VS Code，GCM 可能已經有憑證，
-> 這一步會直接成功。
-
-### 步驟 3（可選）：確認推上去的內容
+### 如果在別台機器重新開始
 
 ```powershell
-git log --oneline          # 應該看到一個 commit
-git ls-tree -r --name-only HEAD | Measure-Object -Line   # 304 行
+git clone https://github.com/wong060404/cppforge.git
+cd cppforge
+node app/server/index.mjs
 ```
-
-到 GitHub 網頁上確認 `README.md` 有正常顯示（含表格與程式碼區塊）。
 
 ---
 
