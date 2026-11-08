@@ -17,7 +17,8 @@ cd cppforge
 node app/server/index.mjs
 ```
 
-開啟 <http://127.0.0.1:4173>。
+開啟 <http://127.0.0.1:4173>（伺服器會同時監聽 `127.0.0.1` 與 IPv6 的 `::1`，
+所以 `localhost` 這兩種解析都能連上）。
 
 首次使用請點右上角 **「環境檢查」→「安裝工具鏈」**（65 MB，一次性，免安裝、可離線）。
 
@@ -27,6 +28,23 @@ node app/server/index.mjs
 > $env:CPPFORGE_HOME = "C:\CppForge"
 > node app/server/index.mjs
 > ```
+
+### 打不開網頁時（依序檢查）
+
+| 步驟 | 指令 / 動作 | 判讀 |
+|---|---|---|
+| 1 | 改用 **`http://127.0.0.1:4173`**（不要用 `localhost`） | 能開 → 是 `localhost` 的 IPv6 解析問題，不是伺服器壞了 |
+| 2 | `netstat -ano \| findstr :4173` | 有 `LISTENING` → 伺服器活著；沒有 → 行程沒起來或崩了 |
+| 3 | 看啟動時的日誌 | 出現 `[略過] ... EADDRINUSE` → 舊的實例還佔著埠，先關掉舊的 |
+| 4 | 換一個埠：`$env:CPPFORGE_PORT = 4174` | 能開 → 原本的 4173 被別的程式佔用 |
+| 5 | 看網址是否被加成 `https://` | 本服務只有 HTTP，`https` 一定連不上 |
+
+伺服器啟動時會把實際可用的網址印出來，例如：
+
+```
+CppForge  http://127.0.0.1:4173   http://[::1]:4173
+```
+
 
 ### 需求
 

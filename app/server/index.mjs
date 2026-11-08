@@ -239,7 +239,7 @@ async function handleApi(req, res, url) {
   return sendJson(res, 404, { error: "unknown endpoint" });
 }
 
-const server = createServer(async (req, res) => {
+const handler = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host ?? "localhost"}`);
   const pathname = url.pathname;
 
@@ -268,16 +268,52 @@ const server = createServer(async (req, res) => {
     if (!res.headersSent) sendJson(res, 500, { error: "INTERNAL", message: String(err.message ?? err) });
     else res.end();
   }
-});
+};
 
-server.listen(PORT, HOST, () => {
-  console.log(`CppForge  http://${HOST}:${PORT}`);
-  console.log(`內容目錄  ${CONTENT_DIR}`);
-  console.log(`資料庫    ${process.env.CPPFORGE_HOME ?? "(預設)"}`);
-  syncContentCards()
-    .then((n) => console.log(`複習卡同步  ${n} 張概念卡`))
-    .catch((err) => console.error("[syncContentCards]", err));
-});
+// 監聽。
+//
+// 為什麼要兩個位址：Windows 上 `localhost` 會先解析成 IPv6 的 `::1`，
+// 若只綁 127.0.0.1，瀏覽器就可能出現「無法連線」——而用 127.0.0.1 又打得開。
+// 所以 loopback 設定時兩個都聽（仍然只限本機，不對外開放）。
+const urls = [];
+
+function listen(host, label) {
+  return new Promise((resolve) => {
+    const srv = createServer(handler);
+    srv.on("error", (err) => {
+      // IPv6 不可用、或該位址被佔用時，只警告不中斷
+      if (err.code === "EADDRNOTAVAIL" || err.code === "EAFNOSUPPORT" || err.code === "EADDRINUSE") {
+        console.log(`[略過] ${label} ${host}:${PORT} — ${err.code}`);
+        resolve(null);
+        return;
+      }
+      throw err;
+    });
+    srv.listen(PORT, host, () => {
+      urls.push(`http://${label}:${PORT}`);
+      resolve(srv);
+    });
+  });
+}
+
+const isLoopback = HOST === "127.0.0.1" || HOST === "localhost" || HOST === "::1";
+
+const servers = [];
+servers.push(await listen(HOST, HOST === "::1" ? "[::1]" : HOST));
+if (isLoopback) {
+  // 補上另一個 loopback 家族，避免 localhost 解析到不同 IP 時連不上
+  if (HOST !== "127.0.0.1") servers.push(await listen("127.0.0.1", "127.0.0.1"));
+  if (HOST !== "::1") servers.push(await listen("::1", "[::1]"));
+}
+
+console.log(`CppForge  ${urls.join("   ")}`);
+console.log(`內容目錄  ${CONTENT_DIR}`);
+console.log(`資料庫    ${process.env.CPPFORGE_HOME ?? "(預設)"}`);
+if (!isLoopback) console.log(`⚠ 目前綁在 ${HOST}，同網段的其他機器可以連進來（會執行你寫的程式）`);
+
+syncContentCards()
+  .then((n) => console.log(`複習卡同步  ${n} 張概念卡`))
+  .catch((err) => console.error("[syncContentCards]", err));
 
 process.on("unhandledRejection", (err) => console.error("[unhandledRejection]", err));
 process.on("uncaughtException", (err) => console.error("[uncaughtException]", err));
