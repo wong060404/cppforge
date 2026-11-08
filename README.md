@@ -3,8 +3,8 @@
 從零到職場級 C++ 的**訓練系統**（不是教程合集）。
 
 > 狀態：**40 節課（L0–L6），前 4 節是基礎語法、含 CS2310 的核心概念**、錯誤圖鑑 22 條、間隔複習 93 張卡 + 統計頁；整條解鎖鏈以參考解驗證 40/40。
-> **驗收清單：[`docs/19-acceptance.md`](docs/19-acceptance.md)** · **CS2310 概念對照：[`docs/23-cs2310-coverage.md`](docs/23-cs2310-coverage.md)**
-> 進度與路線：**[框架完成進度](docs/12-progress.md)** · 最新一輪：**[橫向功能收尾](docs/18-cross-cutting.md)**
+> **驗收清單：[`docs/19-acceptance.md`](docs/19-acceptance.md)** · **CS2310 概念對照：[`docs/23-cs2310-coverage.md`](docs/23-cs2310-coverage.md)** · **發佈到 GitHub：[`docs/24-publishing.md`](docs/24-publishing.md)**
+> 進度與路線：**[框架完成進度](docs/12-progress.md)**
 > 文件：**[框架](docs/00-framework.md)** · **[POC](docs/01-poc-report.md)** · **[M0](docs/02-m0.md)** · **[圖鑑](docs/03-m1.md)** · **[複習](docs/04-m1b.md)** · **[內容](docs/05-m1c.md)** · **[L2 開場](docs/06-m2.md)** · **[複製語意](docs/07-m2b.md)** · **[運算子](docs/08-m2c.md)** · **[測試框架](docs/09-harness.md)** · **[多型](docs/10-m2d.md)** · **[std::map](docs/11-l3a.md)**
 
 ---
