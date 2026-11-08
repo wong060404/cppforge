@@ -136,17 +136,63 @@ async function initEditor() {
   window.addEventListener("resize", () => state.editor?.layout());
 }
 
-// ── 草稿（localStorage，避免切換節點丟失）────────────────────────────
+// ── 草稿（本機 + 伺服器，兩份）──────────────────────────────────────
+//
+// 為什麼要兩份：
+//   localStorage 只綁在這台瀏覽器的這個 origin —— 清快取、換瀏覽器、換埠都會消失。
+//   伺服器那份存在 SQLite，跟著進度一起走；重新整理、重開瀏覽器、甚至換機器都還在。
+//   打字時先寫本機（零延遲），再 debounce 送到伺服器；開啟節點時取「兩份裡較新的」。
 const draftKey = (id) => `cppforge:draft:${id}`;
+const draftAtKey = (id) => `cppforge:draftAt:${id}`;
+let draftTimer = null;
+let draftSending = false;
+
 function saveDraft(code) {
   if (!state.nodeId) return;
-  try { localStorage.setItem(draftKey(state.nodeId), code); } catch { /* 忽略配額問題 */ }
+  const id = state.nodeId;
+  const at = new Date().toISOString();
+  try {
+    localStorage.setItem(draftKey(id), code);
+    localStorage.setItem(draftAtKey(id), at);
+  } catch { /* 忽略配額問題 */ }
+
+  // debounce：1.2 秒沒有再打字才送，避免每個按鍵都打一次 API
+  if (draftTimer) clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => { pushDraft(id, code); }, 1200);
 }
+
+async function pushDraft(id, code) {
+  if (draftSending) return;
+  draftSending = true;
+  try {
+    await api(`/api/nodes/${id}/draft`, { method: "POST", body: JSON.stringify({ code }) });
+  } catch { /* 離線或伺服器忙碌時安靜失敗；本機那份還在 */ }
+  finally { draftSending = false; }
+}
+
+/** 立刻把目前草稿送出去（切換節點、關頁前用） */
+function flushDraft() {
+  if (!state.nodeId) return;
+  if (draftTimer) { clearTimeout(draftTimer); draftTimer = null; }
+  try {
+    const code = localStorage.getItem(draftKey(state.nodeId));
+    if (code != null) pushDraft(state.nodeId, code);
+  } catch { /* ignore */ }
+}
+
 function loadDraft(id) {
   try { return localStorage.getItem(draftKey(id)); } catch { return null; }
 }
+function loadDraftAt(id) {
+  try { return localStorage.getItem(draftAtKey(id)); } catch { return null; }
+}
 function clearDraft(id) {
-  try { localStorage.removeItem(draftKey(id)); } catch { /* ignore */ }
+  try {
+    localStorage.removeItem(draftKey(id));
+    localStorage.removeItem(draftAtKey(id));
+  } catch { /* ignore */ }
+  // 伺服器那份也要清，否則「還原」之後重新整理又會把舊草稿拉回來
+  pushDraft(id, "");
 }
 
 const dirtyEl = () => $("runState");
@@ -160,7 +206,6 @@ function markDirty(dirty) {
 // ── 側欄 ─────────────────────────────────────────────────────────────
 function dotFor(n) {
   if (n.passed) return `<span class="dot passed">●</span>`;
-  if (!n.unlocked) return `<span class="dot lock">🔒</span>`;
   if (n.attempts > 0) return `<span class="dot started">◐</span>`;
   return `<span class="dot todo">○</span>`;
 }
@@ -179,14 +224,19 @@ function renderSidebar() {
       `${escapeHtml(lv.title)}<span class="count">${done}/${lv.nodes.length}</span>`));
 
     for (const n of lv.nodes) {
-      const btn = el("button", `nodeItem${n.id === state.nodeId ? " active" : ""}${n.unlocked ? "" : " locked"}`);
+      // 所有節點都可點 —— 沒有解鎖機制。
+      // `suggestsFirst` 只用來提示「先看過這幾節會更順」，不影響能不能開。
+      const btn = el("button", `nodeItem${n.id === state.nodeId ? " active" : ""}`);
       btn.type = "button";
-      btn.disabled = !n.unlocked;
       btn.innerHTML = `${dotFor(n)}
         <span class="label"><span class="t">${escapeHtml(n.title)}</span>
         <span class="m">${n.minutes} 分鐘${n.attempts ? ` · 已試 ${n.attempts} 次` : ""}</span></span>`;
-      if (n.unlocked) btn.addEventListener("click", () => openNode(n.id));
-      else btn.title = `需要先通過：${n.blockedBy.join("、")}`;
+      btn.addEventListener("click", () => openNode(n.id));
+      const pre = n.suggestsFirst ?? [];
+      if (pre.length) {
+        btn.title = `建議先看過：${pre.join("、")}（不影響練習）`;
+        btn.classList.add("suggest");
+      }
       group.appendChild(btn);
     }
     box.appendChild(group);
@@ -438,6 +488,8 @@ function renderDrills(drills) {
 // ── 開啟節點 ─────────────────────────────────────────────────────────
 async function openNode(id) {
   if (state.running) return;
+  // 切換節點前先把上一節的草稿送出去（debounce 還沒到就切換會漏）
+  if (state.nodeId && state.nodeId !== id) flushDraft();
   state.nodeId = id;
   localStorage.setItem("cppforge:lastNode", id);
   renderSidebar();
@@ -446,19 +498,33 @@ async function openNode(id) {
   state.node = node;
   renderLesson(node);
 
-  const draft = loadDraft(id);
-  const code = draft ?? node.lastCode ?? node.starter;
+  // 取「兩份草稿裡較新的」：本機（打字零延遲）vs 伺服器（換瀏覽器也還在）
+  const localCode = loadDraft(id);
+  const localAt = loadDraftAt(id) ?? "";
+  const serverCode = node.draft ?? null;
+  const useServer = serverCode !== null && serverCode !== undefined &&
+    (!localCode || localAt < (node.draftAt ?? "")) && serverCode.length > 0;
+  const code = useServer ? serverCode : (localCode ?? node.lastCode ?? node.starter);
   if (state.editor) state.editor.setValue(code);
   else state.pendingCode = code;   // 編輯器還在載入，先存起來
-  if (draft && draft !== (node.lastCode ?? node.starter)) markDirty(true);
+  // 把選中的那份寫回本機，下次開同一節不會又退回伺服器版
+  if (useServer) {
+    try {
+      localStorage.setItem(draftKey(id), serverCode);
+      localStorage.setItem(draftAtKey(id), node.draftAt ?? new Date().toISOString());
+    } catch { /* ignore */ }
+  }
+  const baseline = node.lastCode ?? node.starter;
+  if (code && code !== baseline) markDirty(true);
   else markDirty(false);
 
-  $("btnRun").disabled = !node.unlocked;
-  if (!node.unlocked) {
-    $("results").innerHTML = `<div class="results-empty">這一節尚未解鎖，請先通過：${escapeHtml(node.prerequisites.join("、"))}</div>`;
-  } else {
-    $("results").innerHTML = `<div class="results-empty">按「執行」送出這份程式碼；評測會編譯、跑隱藏測試、檢查記憶體與禁用寫法。</div>`;
-  }
+  // 沒有解鎖機制：任何一節都可以直接執行
+  $("btnRun").disabled = false;
+  const pre = node.suggestsFirst ?? [];
+  $("results").innerHTML = pre.length
+    ? `<div class="results-empty">建議先看過：${escapeHtml(pre.join("、"))}（不影響練習）。<br>
+       按「執行」送出這份程式碼；評測會編譯、跑隱藏測試、檢查記憶體與禁用寫法。</div>`
+    : `<div class="results-empty">按「執行」送出這份程式碼；評測會編譯、跑隱藏測試、檢查記憶體與禁用寫法。</div>`;
   const names = node.interfaceFiles?.map((f) => f.name) ?? [];
   const subName = node.submissionName ?? "submission.cpp";
   $("fileName").textContent = names.length
@@ -539,7 +605,7 @@ function renderReport(report, saved) {
 
 async function run() {
   if (!state.nodeId || state.running) return;
-  if (!state.node?.unlocked) return;   // Ctrl+Enter 也必須遵守解鎖規則
+  if (!state.node) return;   // 沒有節點就不用跑
   const code = state.editor?.getValue() ?? "";
   setRunning(true);
   $("results").innerHTML = `<div class="results-empty">編譯與執行中…（首次執行會先建置沙箱，約需數秒）</div>`;
@@ -578,7 +644,7 @@ async function run() {
     dirtyEl().textContent = "執行失敗";
   } finally {
     setRunning(false);
-    if (!state.running) $("btnRun").disabled = !(state.node?.unlocked ?? false);
+    if (!state.running) $("btnRun").disabled = !state.node;
   }
 }
 
@@ -949,10 +1015,10 @@ async function boot() {
     updateProgress(course.stats);
 
     const all = state.levels.flatMap((l) => l.nodes);
+    // 回到上次那一節（重新整理、重開瀏覽器都還在），否則挑第一個還沒通過的
     const saved = localStorage.getItem("cppforge:lastNode");
-    const pick = all.find((n) => n.id === saved && n.unlocked)
-      ?? all.find((n) => n.unlocked && !n.passed)
-      ?? all.filter((n) => n.unlocked).pop()
+    const pick = all.find((n) => n.id === saved)
+      ?? all.find((n) => !n.passed)
       ?? all[0];
     if (pick) await openNode(pick.id);
   } catch (err) {

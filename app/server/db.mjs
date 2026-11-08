@@ -3,13 +3,14 @@
 // 為什麼用內建的 node:sqlite：better-sqlite3 需要 node-gyp + MSVC 編譯，
 // 而參考機器上沒有 MSVC。Node 24 內建 SQLite，直接用即可。
 //
-// 資料庫放 HOME（ASCII 路徑），不放 workspace —— 避免 OneDrive 同步衝突。
+// 位置由 config.mjs 決定（預設 HOME，可用 CPPFORGE_DB 覆寫）。
+// 這裡存的是**使用者的進度與草稿**，所以路徑必須穩定 —— 檔案一旦不見，學習紀錄就沒了。
 
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
-import { DB_PATH, HOME } from "./config.mjs";
+import { DB_DIR, DB_PATH } from "./config.mjs";
 
-mkdirSync(HOME, { recursive: true });
+mkdirSync(DB_DIR, { recursive: true });
 
 export const db = new DatabaseSync(DB_PATH);
 
@@ -71,6 +72,16 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_reviews_card ON reviews(card_id, id DESC);
+
+  -- 每一節的程式碼草稿。
+  -- 為什麼要放伺服器：只存在 localStorage 的話，換瀏覽器、清快取、
+  -- 或換了埠（localStorage 是按 origin 隔離）就整批消失。
+  -- 這裡存一份，前端仍然優先用本機那份（打字時零延遲）。
+  CREATE TABLE IF NOT EXISTS drafts (
+    node_id    TEXT PRIMARY KEY,
+    code       TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
 `);
 
 const nowIso = () => new Date().toISOString();
@@ -102,6 +113,12 @@ const q = {
   setSetting: db.prepare(
     "INSERT INTO settings(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
   ),
+  getDraft: db.prepare("SELECT code, updated_at FROM drafts WHERE node_id = ?"),
+  upsertDraft: db.prepare(`
+    INSERT INTO drafts(node_id, code, updated_at) VALUES (?, ?, ?)
+    ON CONFLICT(node_id) DO UPDATE SET code = excluded.code, updated_at = excluded.updated_at
+  `),
+  allDrafts: db.prepare("SELECT node_id, updated_at FROM drafts"),
 };
 
 /** 全部節點的進度（Map<nodeId, row>） */
@@ -117,6 +134,23 @@ export function progressOf(nodeId) {
 
 export function lastSubmission(nodeId) {
   return q.lastAttempt.get(nodeId) ?? null;
+}
+
+/** 這一節的程式碼草稿（沒有就回 null） */
+export function draftOf(nodeId) {
+  const row = q.getDraft.get(nodeId);
+  return row ? { code: row.code, updatedAt: row.updated_at } : null;
+}
+
+/** 存草稿（自動儲存用；空字串也存，代表使用者刻意清空） */
+export function saveDraftCode(nodeId, code) {
+  q.upsertDraft.run(nodeId, String(code ?? ""), nowIso());
+  return true;
+}
+
+/** 有草稿的節點清單（給「恢復上次進度」用） */
+export function allDrafts() {
+  return q.allDrafts.all();
 }
 
 /** 記錄一次評測；回傳更新後的進度與「是否首次通過」 */

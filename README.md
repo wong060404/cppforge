@@ -4,7 +4,7 @@
 
 > 狀態：**40 節課（L0–L6），前 4 節是基礎語法、含 CS2310 的核心概念**、錯誤圖鑑 22 條、間隔複習 93 張卡 + 統計頁；整條解鎖鏈以參考解驗證 40/40。
 > **驗收清單：[`docs/19-acceptance.md`](docs/19-acceptance.md)** · **CS2310 概念對照：[`docs/23-cs2310-coverage.md`](docs/23-cs2310-coverage.md)** · **發佈到 GitHub：[`docs/24-publishing.md`](docs/24-publishing.md)**
-> 進度與路線：**[框架完成進度](docs/12-progress.md)** · **完整功能審計（含修了什麼）：[`docs/25-audit.md`](docs/25-audit.md)**
+> 進度與路線：**[框架完成進度](docs/12-progress.md)** · **完整功能審計：[`docs/25-audit.md`](docs/25-audit.md)** · **自由存取與資料保存：[`docs/26-free-access-and-persistence.md`](docs/26-free-access-and-persistence.md)**
 > 文件：**[框架](docs/00-framework.md)** · **[POC](docs/01-poc-report.md)** · **[M0](docs/02-m0.md)** · **[圖鑑](docs/03-m1.md)** · **[複習](docs/04-m1b.md)** · **[內容](docs/05-m1c.md)** · **[L2 開場](docs/06-m2.md)** · **[複製語意](docs/07-m2b.md)** · **[運算子](docs/08-m2c.md)** · **[測試框架](docs/09-harness.md)** · **[多型](docs/10-m2d.md)** · **[std::map](docs/11-l3a.md)**
 
 ---
@@ -20,7 +20,25 @@ node app/server/index.mjs
 開啟 <http://127.0.0.1:4173>（伺服器會同時監聽 `127.0.0.1` 與 IPv6 的 `::1`，
 所以 `localhost` 這兩種解析都能連上）。
 
+**所有 40 節都開放**：想從哪一節開始都可以，不必先通過前面。
+先修關係只當提示（側邊欄標「建議先看過」），不影響能不能開、能不能執行。
+
 首次使用請點右上角 **「環境檢查」→「安裝工具鏈」**（65 MB，一次性，免安裝、可離線）。
+
+### 你的進度與程式碼存在哪裡
+
+| 東西 | 位置 | 更新程式會不見嗎 |
+|---|---|---|
+| 進度、評測紀錄、複習排程 | SQLite（預設 `%LOCALAPPDATA%\CppForge\cppforge.db`） | **不會** —— 更新只換程式碼，不動資料庫 |
+| 每一節的程式碼草稿 | ①瀏覽器 localStorage ②同一個 SQLite（停止打字 1.2 秒後自動存） | **不會** —— 兩份互相備援 |
+| 上次停在哪一節 | localStorage `cppforge:lastNode` | 不會（重新整理回到同一節） |
+
+想指定資料庫位置（放進專案、或做備份）：
+
+```powershell
+$env:CPPFORGE_DB = "C:\CppForge\cppforge.db"
+node app/server/index.mjs
+```
 
 > 若你的使用者目錄含中文（例如 `C:\Users\名稱\…`），MinGW 的 `ld.exe` 會無法連結。
 > 這時要先指定純英文路徑：
@@ -110,7 +128,7 @@ AI 在這裡是 reviewer / 教練 / 出題者，不是 solver。
 **L1 的順序刻意由淺入深**：先型別，再運算子，再分支，最後函式 ——
 每一節都只用到前面教過的東西，第一次出現的語法都有完整課文。
 
-共 **40 節**：每節都有課文、**本節任務**（介面契約 ＋ 怎麼做 ＋ 看提示）、
+共 **40 節**（**全部開放，沒有解鎖順序**）：每節都有課文、**本節任務**（介面契約 ＋ 怎麼做 ＋ 看提示）、
 即時練習（全部選擇題）、自動評測、2–3 張複習卡。
 整條鏈已用參考解逐節走完驗證（**40/40**），先修關係是單一線性路徑。
 ---|---|---|

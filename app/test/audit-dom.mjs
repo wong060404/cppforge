@@ -12,7 +12,8 @@
  *   node app/server/index.mjs   （另開終端）
  *   node app/test/audit-dom.mjs [--base URL] [--jsdom PATH]
  *
- * 前置：該節點必須已解鎖（未解鎖的節點在側邊欄是 disabled，無法點開）。
+ * 沒有前置條件：所有節點都自由存取，任何一節都能直接開、直接執行。
+ * 這個測試自己會驗這件事（先開最後一節、而且不經過任何前面的節點）。
  */
 import { createRequire } from "node:module";
 import process from "node:process";
@@ -93,9 +94,14 @@ async function waitFor(fn, label, timeout = 15000) {
 
   check(qsa("#sidebar .nodeItem").length === 40, "側邊欄 40 個節點", `${qsa("#sidebar .nodeItem").length}`);
   check(qsa("#sidebar .levelGroup").length === 7, "側邊欄 7 個等級", `${qsa("#sidebar .levelGroup").length}`);
-  check($("progressText").textContent.trim() === `${allNodes.length} / ${allNodes.length}`,
-    "進度顯示 40 / 40", $("progressText").textContent);
+  const passedNow = allNodes.filter((n) => n.passed).length;
+  check($("progressText").textContent.trim() === `${passedNow} / ${allNodes.length}`,
+    `進度顯示 ${passedNow} / ${allNodes.length}`, $("progressText").textContent);
   check($("statChip").textContent.length > 0, "獨立完成率晶片有內容", $("statChip").textContent);
+
+  // 沒有解鎖機制：所有節點按鈕都必須是可點的
+  const disabledCount = qsa("#sidebar .nodeItem").filter((b) => b.disabled).length;
+  check(disabledCount === 0, "沒有任何節點被鎖住（按鈕都不是 disabled）", `${disabledCount} 個 disabled`);
 
   // 環境晶片是 async 的，給它時間（doctor 會探測工具鏈）
   let envOk = false;
@@ -105,8 +111,7 @@ async function waitFor(fn, label, timeout = 15000) {
   } catch { envOk = false; }
   check(envOk, "環境晶片會更新（非一直「檢查中」）", $("envChip").textContent);
 
-  console.log("\n── B. 逐一開啟全部 40 節（等標題切換完成）───");
-  const navFail = [];
+  console.log("\n── B. 自由存取：先直接開最後一節 ─────────────");
   const nodeEls = qsa("#sidebar .nodeItem");
   const openNode = async (i) => {
     const node = allNodes[i];
@@ -116,6 +121,31 @@ async function waitFor(fn, label, timeout = 15000) {
       return h1 && h1.textContent.trim() === node.title;
     }, `${node.id} 課文`, 12000);
   };
+
+  // 不經過任何前面的節點，直接跳最後一節（舊版這裡會是 disabled / 403）
+  const lastIdx = allNodes.length - 1;
+  await openNode(lastIdx);
+  check($("btnRun").disabled === false, `可以直接開最後一節（${allNodes[lastIdx].id}）並執行`,
+    `btnRun.disabled=${$("btnRun").disabled}`);
+  check($("lesson").querySelector(".taskCard") !== null, "最後一節的任務卡正常渲染");
+
+  // 草稿：在編輯器打字 → debounce 後應該存到伺服器
+  const ta = $("editor").querySelector("textarea");
+  if (ta) {
+    const marker = `// draft-probe-${Date.now()}`;
+    ta.value = `${marker}\n${ta.value}`;
+    ta.dispatchEvent(new window.Event("input", { bubbles: true }));
+    await sleep(1800); // 等 debounce（1.2s）+ 往返
+    const saved = await (await fetch(`${BASE}/api/nodes/${allNodes[lastIdx].id}`)).json();
+    check(typeof saved.draft === "string" && saved.draft.includes("draft-probe-"),
+      "編輯器內容會自動存到伺服器（重新整理不會丟）",
+      saved.draft ? `${saved.draft.length} 字` : "沒有草稿");
+  } else {
+    check(false, "編輯器有可輸入的 textarea");
+  }
+
+  console.log("\n── C. 逐一開啟全部 40 節（等標題切換完成）───");
+  const navFail = [];
 
   for (let i = 0; i < allNodes.length; i += 1) {
     const node = allNodes[i];
@@ -147,7 +177,7 @@ async function waitFor(fn, label, timeout = 15000) {
   }
   check(navFail.length === 0, "40 節內容與渲染全部齊全", navFail.slice(0, 4).join(" | "));
 
-  console.log("\n── C. 單節互動（L0.01）──────────────────────");
+  console.log("\n── D. 單節互動（L0.01）──────────────────────");
   await openNode(0);
   const hintBtn = $("btnHint");
   const hintTotal = (await (await fetch(`${BASE}/api/nodes/${allNodes[0].id}`)).json()).hints.length;
@@ -179,7 +209,7 @@ async function waitFor(fn, label, timeout = 15000) {
   await sleep(150);
   check($("editor").textContent.length > 0 || $("editor").querySelector("textarea") !== null, "「還原」後編輯器仍有內容");
 
-  console.log("\n── D. 真正執行一次評測 ───────────────────────");
+  console.log("\n── E. 真正執行一次評測 ───────────────────────");
   const t0 = Date.now();
   $("btnRun").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
   await waitFor(() => $("results").textContent.trim().length > 30 && !$("runState").textContent.includes("執行中"), "評測完成", 180000);
@@ -187,7 +217,7 @@ async function waitFor(fn, label, timeout = 15000) {
   check(resultsEls > 3, "評測結果已渲染", `${resultsEls} 個節點，${Math.round((Date.now() - t0) / 1000)}s`);
   check(/FAIL|PASS|失敗|通過/.test($("results").textContent), "評測結果有判定字樣", $("results").textContent.slice(0, 30).replace(/\s+/g, " "));
 
-  console.log("\n── E. 錯誤圖鑑 ───────────────────────────────");
+  console.log("\n── F. 錯誤圖鑑 ───────────────────────────────");
   $("btnAtlas").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
   await waitFor(() => !$("modal").classList.contains("hidden"), "圖鑑開啟");
   await waitFor(() => qsa("#modalBody .atlasEntry, #modalBody article, #modalBody details, #modalBody .entry").length > 0 || $("modalBody").textContent.includes("條"), "圖鑑列表", 15000);
@@ -225,7 +255,7 @@ async function waitFor(fn, label, timeout = 15000) {
   }
   check($("modal").classList.contains("hidden"), "圖鑑可關閉");
 
-  console.log("\n── F. 環境檢查 ───────────────────────────────");
+  console.log("\n── G. 環境檢查 ───────────────────────────────");
   $("btnDoctor").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
   await waitFor(() => !$("modal").classList.contains("hidden"), "環境檢查開啟");
   await sleep(600);
@@ -234,7 +264,7 @@ async function waitFor(fn, label, timeout = 15000) {
   $("modalClose").dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
   await sleep(100);
 
-  console.log("\n── G. 複習（開在 modal 裡）───────────────────");
+  console.log("\n── H. 複習（開在 modal 裡）───────────────────");
   const chip = $("reviewChip");
   check(chip !== null, "有複習晶片");
   check(chip && !chip.hidden, "複習晶片可見（有到期卡）", chip ? chip.textContent : "-");
@@ -283,7 +313,7 @@ async function waitFor(fn, label, timeout = 15000) {
     check($("modal").classList.contains("hidden"), "複習可關閉");
   }
 
-  console.log("\n── H. 未捕捉的 JS 例外 ───────────────────────");
+  console.log("\n── I. 未捕捉的 JS 例外 ───────────────────────");
   const real = errors.filter((e) => !/monaco|vendor\/|Failed to load resource|404|Not implemented/i.test(e));
   check(real.length === 0, "全程沒有未捕捉例外", real.slice(0, 3).join(" | "));
 

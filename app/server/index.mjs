@@ -13,7 +13,9 @@ import process from "node:process";
 import {
   CONTENT_DIR, GXX, HOST, MONACO_DIR, PORT, WEB_DIR,
 } from "./config.mjs";
-import { allProgress, lastSubmission, progressOf, recordAttempt, reviewHistory, stats } from "./db.mjs";
+import {
+  allProgress, draftOf, lastSubmission, progressOf, recordAttempt, reviewHistory, saveDraftCode, stats,
+} from "./db.mjs";
 import { courseTree, lintContent, loadNode, scanNodes } from "./content.mjs";
 import { evaluateNode } from "./grading.mjs";
 import { doctorReport, installToolchain } from "./doctor.mjs";
@@ -189,20 +191,38 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, await lintContent());
   }
 
-  // GET /api/nodes/:id   |   POST /api/nodes/:id/run
+  // GET /api/nodes/:id   |   POST /api/nodes/:id/run   |   POST /api/nodes/:id/draft
   if (parts[0] === "api" && parts[1] === "nodes" && parts[2]) {
     const id = decode(parts[2]);
     const progress = allProgress();
 
     if (req.method === "GET" && parts.length === 3) {
-      const node = await loadNode(id, progress);
+      const draft = draftOf(id);
+      const node = await loadNode(id, progress, { draft: draft?.code ?? null });
       if (!node) return sendJson(res, 404, { error: "node not found" });
       const last = lastSubmission(id);
       return sendJson(res, 200, {
         ...node,
+        draftAt: draft?.updatedAt ?? null,
         lastCode: last?.code ?? null,
         lastAt: last?.created_at ?? null,
       });
+    }
+
+    // 自動儲存的草稿：只寫入，不做評測（打字時每 1–2 秒呼叫一次）
+    if (req.method === "POST" && parts[3] === "draft") {
+      const body = await readJsonBody(req, res);
+      if (body === null) return;
+      if (typeof body.code !== "string") {
+        return sendJson(res, 400, { error: "BAD_CODE", message: "code 必須是字串" });
+      }
+      if (body.code.length > 512 * 1024) {
+        return sendJson(res, 413, { error: "CODE_TOO_LONG", message: "草稿過長（上限 512 KB）" });
+      }
+      const nodes = await scanNodes();
+      if (!nodes.some((n) => n.id === id)) return sendJson(res, 404, { error: "node not found" });
+      saveDraftCode(id, body.code);
+      return sendJson(res, 200, { ok: true, savedAt: new Date().toISOString() });
     }
 
     if (req.method === "POST" && parts[3] === "run") {
@@ -218,17 +238,7 @@ async function handleApi(req, res, url) {
       const node = nodes.find((n) => n.id === id);
       if (!node) return sendJson(res, 404, { error: "node not found" });
 
-      // 先修未完成就不給跑：避免跳過整個學習路徑
-      const passedIds = new Set([...progress.values()].filter((p) => p.passed).map((p) => p.node_id));
-      const missing = (node.prerequisites ?? []).filter((p) => !passedIds.has(p));
-      if (missing.length > 0) {
-        return sendJson(res, 403, {
-          error: "NODE_LOCKED",
-          message: `這一節尚未解鎖，請先通過：${missing.join("、")}`,
-          blockedBy: missing,
-        });
-      }
-
+      // 自由存取：不再檢查先修。prerequisites 僅用於 UI 的「建議先看過」提示。
       const t0 = Date.now();
       let report;
       try {

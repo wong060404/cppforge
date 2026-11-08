@@ -21,6 +21,10 @@ node_modules/
 build/
 runs/
 
+# 本機資料（進度與草稿的 SQLite）
+# 存在專案內是為了「更新程式碼不會弄丟學習紀錄」，但它不該進版控
+.data/
+
 # 編輯器 / 系統雜項
 .DS_Store
 Thumbs.db

@@ -25,14 +25,18 @@ const nowIso = () => new Date().toISOString();
  */
 export async function syncContentCards() {
   const nodes = await scanNodes();
-  const passed = new Set(
-    [...allProgress().values()].filter((p) => p.passed).map((p) => p.node_id),
+  // 「碰過」＝按過執行或已通過。
+  // 節點現在全部可自由存取，若 40 節一次建卡，第一次開就會有 100+ 張到期卡 ——
+  // 複習會變成清庫存。只為碰過的節點建卡，複習才有意義。
+  const touched = new Set(
+    [...allProgress().values()]
+      .filter((p) => p.passed || (p.attempts ?? 0) > 0)
+      .map((p) => p.node_id),
   );
 
   let created = 0;
   for (const node of nodes) {
-    const unlocked = (node.prerequisites ?? []).every((p) => passed.has(p));
-    if (!unlocked) continue;
+    if (!touched.has(node.id)) continue;
     for (const [i, c] of (node.cards ?? []).entries()) {
       if (!c.q || !c.a) continue;
       upsertCard({

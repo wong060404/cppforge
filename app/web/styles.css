@@ -136,8 +136,7 @@ kbd {
 }
 .nodeItem:hover { background: #18212b; color: var(--text); }
 .nodeItem.active { background: #1a2534; border-left-color: var(--accent); color: #eaf2ff; }
-.nodeItem.locked { color: var(--text-faint); cursor: not-allowed; }
-.nodeItem.locked:hover { background: transparent; color: var(--text-faint); }
+.nodeItem.suggest .label .m::after { content: " · 建議先看過"; color: #7f8ea3; }
 .nodeItem .dot { flex: 0 0 auto; margin-top: 3px; font-size: 9px; }
 .nodeItem .label { flex: 1; min-width: 0; }
 .nodeItem .label .t { display: block; font-size: 13.2px; }

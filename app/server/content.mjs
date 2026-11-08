@@ -59,14 +59,19 @@ export async function scanNodes() {
     a.level !== b.level ? a.level - b.level : (a.order ?? 0) - (b.order ?? 0));
 }
 
-/** 課程樹 + 解鎖狀態 */
+/**
+ * 課程樹。
+ *
+ * 所有節點**一律可存取**（unlocked 永遠 true）—— 這是有意的設計決定：
+ * 學習者可以自由跳到任何一節，不必先通過前面。`prerequisites` 仍然保留，
+ * 但只用來顯示「建議先看過」的提示（`suggestsFirst`），不再是門檻。
+ */
 export async function courseTree(progress) {
   const nodes = await scanNodes();
   const passed = new Set([...progress.values()].filter((p) => p.passed).map((p) => p.node_id));
 
   const enriched = nodes.map((n) => {
     const prereqs = n.prerequisites ?? [];
-    const unlocked = prereqs.every((p) => passed.has(p));
     const row = progress.get(n.id);
     return {
       id: n.id,
@@ -78,10 +83,11 @@ export async function courseTree(progress) {
       prerequisites: prereqs,
       concepts: n.concepts ?? [],
       tags: n.tags ?? [],
-      unlocked,
+      unlocked: true,            // 不再上鎖
       passed: passed.has(n.id),
       attempts: row?.attempts ?? 0,
-      blockedBy: prereqs.filter((p) => !passed.has(p)),
+      // 只作為 UI 提示：「先看過這幾節會更順」，不影響能不能開
+      suggestsFirst: prereqs.filter((p) => !passed.has(p)),
     };
   });
 
@@ -119,8 +125,9 @@ export function defaultSteps(node) {
   return steps;
 }
 
-/** 單一節點的完整內容（給 UI） */
-export async function loadNode(id, progress) {
+/** 單一節點的完整內容（給 UI）。opts.draft = 伺服器端儲存的草稿（可選） */
+export async function loadNode(id, progress, opts = {}) {
+  const { draft = null } = opts;
   const nodes = await scanNodes();
   const node = nodes.find((n) => n.id === id);
   if (!node) return null;
@@ -152,11 +159,14 @@ export async function loadNode(id, progress) {
     concepts: node.concepts ?? [],
     submissionName: subName,
     prerequisites: prereqs,
-    unlocked: prereqs.every((p) => passed.has(p)),
+    unlocked: true,                                  // 自由存取，不再依先修解鎖
+    suggestsFirst: prereqs.filter((p) => !passed.has(p)),
     passed: passed.has(id),
     attempts: row?.attempts ?? 0,
     lesson,
     starter,
+    // 伺服器端草稿（由呼叫端傳入；content.mjs 刻意不依賴 db）
+    draft: draft ?? null,
     interfaceFiles,
     drills: node.drills ?? [],
     // 任務卡用：怎麼做（步驟）與提示。
