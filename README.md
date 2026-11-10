@@ -47,21 +47,41 @@ node app/server/index.mjs
 > node app/server/index.mjs
 > ```
 
+### 用 `start.cmd` 啟動（建議）
+
+```powershell
+.\start.cmd
+```
+
+它會自動決定三件事，然後幫你開瀏覽器：
+
+| 它設定的 | 值 | 為什麼 |
+|---|---|---|
+| `CPPFORGE_DB` | `<專案>\.data\cppforge.db` | 進度與草稿留在專案內，`git pull` 動不到 |
+| `CPPFORGE_HOME` | 優先用 `C:\CppForge`，不能寫才退回 `%TEMP%` | 工具鏈路徑必須純 ASCII（MinGW 的 `ld.exe` 打不開中文路徑） |
+| `CPPFORGE_PORT` | `4173` | 被佔用時可以 `set CPPFORGE_PORT=4174` 再啟動 |
+
+> **這個視窗要留著**：關掉視窗就等於關掉服務。
+
 ### 打不開網頁時（依序檢查）
+
+`ERR_CONNECTION_REFUSED` 幾乎都是「**伺服器沒在跑**」，不是網頁的問題。
 
 | 步驟 | 指令 / 動作 | 判讀 |
 |---|---|---|
-| 1 | 改用 **`http://127.0.0.1:4173`**（不要用 `localhost`） | 能開 → 是 `localhost` 的 IPv6 解析問題，不是伺服器壞了 |
-| 2 | `netstat -ano \| findstr :4173` | 有 `LISTENING` → 伺服器活著；沒有 → 行程沒起來或崩了 |
-| 3 | 看啟動時的日誌 | 出現 `[略過] ... EADDRINUSE` → 舊的實例還佔著埠，先關掉舊的 |
-| 4 | 換一個埠：`$env:CPPFORGE_PORT = 4174` | 能開 → 原本的 4173 被別的程式佔用 |
-| 5 | 看網址是否被加成 `https://` | 本服務只有 HTTP，`https` 一定連不上 |
+| 0 | **伺服器還開著嗎？** 有沒有 `start.cmd` 的視窗 | 關掉了 → 重新 `.\start.cmd`（進度不會掉） |
+| 1 | `netstat -ano \| findstr :4173` | 沒有 `LISTENING` → 伺服器真的沒起來（回步驟 0） |
+| 2 | 改用 **`http://127.0.0.1:4173`**（不要 `localhost`） | 能開 → `localhost` 的 IPv6 解析問題 |
+| 3 | 看啟動日誌有無 `[略過] ... EADDRINUSE` | 有 → 已經有一個在跑，直接開網址即可 |
+| 4 | `$env:CPPFORGE_PORT = 4174` 再啟動 | 能開 → 4173 被別的程式佔用 |
+| 5 | 確認網址不是 `https://` | 本服務只有 HTTP |
 
 伺服器啟動時會把實際可用的網址印出來，例如：
 
 ```
 CppForge  http://127.0.0.1:4173   http://[::1]:4173
 ```
+
 
 
 ### 需求

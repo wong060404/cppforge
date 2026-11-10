@@ -1,13 +1,52 @@
 @echo off
-rem CppForge 啟動器
-rem 需要 Node.js 20+（本機為 v24）。第一次使用請在 UI 內按「安裝工具鏈」。
+rem ---------------------------------------------------------------
+rem  CppForge launcher
+rem  Requires Node.js 24+ (built-in node:sqlite).
+rem  First run: click "Environment check -> Install toolchain" in the UI.
+rem
+rem  NOTE: this file is intentionally ASCII-only with no parentheses
+rem  blocks around Chinese text: cmd.exe reads .cmd in the OEM code page,
+rem  and multi-byte characters inside ( ) blocks break parsing.
+rem ---------------------------------------------------------------
 setlocal
 cd /d "%~dp0"
 
-rem 若使用者目錄含非 ASCII 字元（例如中文），MinGW 的 ld.exe 會無法連結，
-rem 必須改用純英文路徑。取消下面這行的註解並改成你想要的磁碟機：
-rem set CPPFORGE_HOME=C:\CppForge
+rem 1) Database (progress + code drafts). Kept inside the project so a
+rem    "git pull" can never touch it.
+if "%CPPFORGE_DB%"=="" set CPPFORGE_DB=%~dp0.data\cppforge.db
+if not exist "%~dp0.data" mkdir "%~dp0.data" >nul 2>nul
 
-echo 啟動 CppForge ...  瀏覽器請開 http://127.0.0.1:4173
+rem 2) Toolchain home. MUST be a pure-ASCII path: MinGW ld.exe cannot
+rem    open paths with non-ASCII characters. Prefer C:\CppForge, fall
+rem    back to %TEMP% when that is not writable.
+if not "%CPPFORGE_HOME%"=="" goto have_home
+if exist "C:\CppForge\w64devkit\bin\g++.exe" goto use_c_cppforge
+mkdir "C:\CppForge" >nul 2>nul
+if exist "C:\CppForge" goto use_c_cppforge
+set CPPFORGE_HOME=%TEMP%\cppforge-home
+goto have_home
+
+:use_c_cppforge
+set CPPFORGE_HOME=C:\CppForge
+
+:have_home
+if "%CPPFORGE_PORT%"=="" set CPPFORGE_PORT=4173
+
+echo.
+echo   CppForge starting
+echo   URL      http://127.0.0.1:%CPPFORGE_PORT%
+echo   Database %CPPFORGE_DB%
+echo   Toolchain %CPPFORGE_HOME%
+echo.
+echo   Keep this window open; closing it stops the server.
+echo.
+
+start "" /b cmd /c "timeout /t 2 >nul & start http://127.0.0.1:%CPPFORGE_PORT%"
+
 node app\server\index.mjs
-if errorlevel 1 pause
+set EXITCODE=%ERRORLEVEL%
+
+echo.
+echo Server stopped (exit %EXITCODE%).
+if not "%EXITCODE%"=="0" echo If it says EADDRINUSE, one is already running: open http://127.0.0.1:%CPPFORGE_PORT%
+pause
